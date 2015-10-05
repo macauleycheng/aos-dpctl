@@ -3,4 +3,4 @@ This dptcl is from https://github.com/CPqD/ofsoftswitch13 but we delete all file
 
 So it only can use dptcl command.
 
-If you just want dpctl command to test OF switch, you can use this.
+It has been modified to use for brodcom OFDPA pipeline and Accton OF switch, and output message can be convert to json.
