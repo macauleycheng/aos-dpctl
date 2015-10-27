@@ -404,6 +404,13 @@ enum ofdpa_match_exp_type
 /* End of OFDPA2.0
  */
 
+enum accton_match_exp_type
+{
+    ACCTON_OFPXMT_OFB_INPORTS = 1,
+    ACCTON_OFPXMT_OFB_UDF_OFFSET = 2,
+    ACCTON_OFPXMT_OFB_UDF_DATA = 3
+};
+
 /* The VLAN id is 12-bits, so we can use the entire 16 bits to indicate
 * special conditions.
 */

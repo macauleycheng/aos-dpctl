@@ -2165,6 +2165,61 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             continue;
         }
+
+        if (strncmp(token, MATCH_ACCTON_INPORTS KEY_VAL, strlen(MATCH_ACCTON_INPORTS KEY_VAL)) == 0)
+        {
+            uint64_t accton_in_ports;
+
+            if (sscanf(token, MATCH_ACCTON_INPORTS KEY_VAL "0x%"SCNx64"", &accton_in_ports) != 1)
+            {
+                ofp_fatal(0, "Error parsing %s: %s.", MATCH_ACCTON_INPORTS, token);
+            }
+            else
+            {
+                OFDPA_ofl_structs_match_exp_put64(m, OXM_OF_ACCTON_INPORTS, ACCTON_EXPERIMENTER_ID, ACCTON_OFPXMT_OFB_INPORTS, accton_in_ports);
+            }
+
+            continue;
+        }
+
+        if (strncmp(token, MATCH_ACCTON_UDF_OFFSET KEY_VAL, strlen(MATCH_ACCTON_UDF_OFFSET KEY_VAL)) == 0)
+        {
+            uint16_t accton_udf_offset;
+
+            if (parse16(token + strlen(MATCH_ACCTON_UDF_OFFSET KEY_VAL), NULL, 0, 0xffff, &accton_udf_offset))
+            {
+                ofp_fatal(0, "Error parsing accton_udf_offset: %s.", token);
+            }
+            else
+            {
+                OFDPA_ofl_structs_match_exp_put16(m, OXM_OF_ACCTON_UDF_OFFSET, ACCTON_EXPERIMENTER_ID, ACCTON_OFPXMT_OFB_UDF_OFFSET, accton_udf_offset);
+            }
+            continue;
+        }
+
+        if (strncmp(token, MATCH_ACCTON_UDF_DATA KEY_VAL, strlen(MATCH_ACCTON_UDF_DATA KEY_VAL)) == 0)
+        {
+            uint32_t accton_udf_data;
+            uint32_t *mask;
+
+            if (parse32m(token + strlen(MATCH_ACCTON_UDF_DATA KEY_VAL), NULL, 0, 0xffffffff, &accton_udf_data, &mask))
+            {
+                ofp_fatal(0, "Error parsing accton_udf_data: %s.", token);
+            }
+            else
+            {
+                if (mask == NULL)
+                {
+                    OFDPA_ofl_structs_match_exp_put32(m, OXM_OF_ACCTON_UDF_DATA, ACCTON_EXPERIMENTER_ID, ACCTON_OFPXMT_OFB_UDF_DATA, accton_udf_data);
+                }
+                else
+                {
+                    OFDPA_ofl_structs_match_exp_put32m(m, OXM_OF_ACCTON_UDF_DATA_W, ACCTON_EXPERIMENTER_ID, ACCTON_OFPXMT_OFB_UDF_DATA, accton_udf_data, *mask);
+                }
+            }
+            continue;
+        }
+
         /* End of OFDPA2.0
          */
         ofp_fatal(0, "Error parsing match arg: %s.", token);
@@ -4172,7 +4227,7 @@ parse32m(char *str, struct names32 *names, size_t names_num, uint32_t max, uint3
 
     token = strtok_r(str, MASK_SEP, &saveptr);
 
-    if(strcmp(saveptr,"(null)") != 1)
+    if('\0' == *saveptr)
         *mask = NULL;
     else {
         *mask = (uint32_t*) malloc(sizeof(uint32_t));

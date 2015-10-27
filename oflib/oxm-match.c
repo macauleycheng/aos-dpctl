@@ -106,7 +106,7 @@ static struct oxm_field oxm_fields[N_OXM_FIELDS] = {
 /* Hash table of 'oxm_fields'. */
 static struct hmap all_oxm_fields = HMAP_INITIALIZER(&all_oxm_fields);
 
-static int OFDPA_parse_oxm_entry(struct ofl_match *match, const struct oxm_field *f, const void *exp_type, const void *value, const void *mask);
+static int OFDPA_parse_oxm_entry(struct ofl_match *match, const struct oxm_field *f, const void *experimenter, const void *exp_type, const void *value, const void *mask);
 
 static void
 oxm_init(void)
@@ -449,8 +449,9 @@ parse_oxm_entry(struct ofl_match *match, const struct oxm_field *f,
 
 /* For OFDPA2.0
  */
-static int OFDPA_parse_oxm_entry(struct ofl_match *match, const struct oxm_field *f, const void *exp_type, const void *value, const void *mask)
+static int OFDPA_parse_oxm_entry(struct ofl_match *match, const struct oxm_field *f, const void *experimenter, const void *exp_type, const void *value, const void *mask)
 {
+    uint32_t exp_id = ntohl(*((uint32_t*) experimenter));
     uint16_t tmp_exp_type = ntohs(*((uint16_t*) exp_type));
 
     switch (f->header)
@@ -458,27 +459,31 @@ static int OFDPA_parse_oxm_entry(struct ofl_match *match, const struct oxm_field
         case OXM_OF_OFDPA_VALUE8:
         {
             uint8_t *v = (uint8_t*) value;
-            OFDPA_ofl_structs_match_exp_put8(match, OXM_OF_OFDPA_VALUE8, 0x1018, tmp_exp_type, *v);
+            OFDPA_ofl_structs_match_exp_put8(match, OXM_OF_OFDPA_VALUE8, exp_id, tmp_exp_type, *v);
             return 0;
         }
 
         case OXM_OF_OFDPA_VALUE16:
-            OFDPA_ofl_structs_match_exp_put16(match, OXM_OF_OFDPA_VALUE16, 0x1018, tmp_exp_type, ntohs(*((uint16_t*) value)));
+            OFDPA_ofl_structs_match_exp_put16(match, OXM_OF_OFDPA_VALUE16, exp_id, tmp_exp_type, ntohs(*((uint16_t*) value)));
             return 0;
 
         case OXM_OF_OFDPA_VALUE32:
-            OFDPA_ofl_structs_match_exp_put32(match, OXM_OF_OFDPA_VALUE32, 0x1018, tmp_exp_type, ntohl(*((uint32_t*) value)));
+            OFDPA_ofl_structs_match_exp_put32(match, OXM_OF_OFDPA_VALUE32, exp_id, tmp_exp_type, ntohl(*((uint32_t*) value)));
             return 0;
 
         case OXM_OF_OFDPA_VALUE32_W:
-            if(OFDPA_OFPXMT_OFB_MPLS_L2_PORT == tmp_exp_type)
+            if( (OFDPA_OFPXMT_OFB_MPLS_L2_PORT == tmp_exp_type) || (ACCTON_OFPXMT_OFB_UDF_DATA == tmp_exp_type) )
             {
-                OFDPA_ofl_structs_match_exp_put32m(match, OXM_OF_OFDPA_VALUE32_W, 0x1018, tmp_exp_type, ntohl(*((uint32_t*) value)), ntohl(*((uint32_t*) mask)));
+                OFDPA_ofl_structs_match_exp_put32m(match, OXM_OF_OFDPA_VALUE32_W, exp_id, tmp_exp_type, ntohl(*((uint32_t*) value)), ntohl(*((uint32_t*) mask)));
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put64(match, OXM_OF_OFDPA_VALUE64, 0x1018, tmp_exp_type, *((uint64_t*) value));
+                OFDPA_ofl_structs_match_exp_put64(match, OXM_OF_OFDPA_VALUE64, exp_id, tmp_exp_type, *((uint64_t*) value));
             }
+            return 0;
+
+        case OXM_OF_OFDPA_VALUE64:
+            OFDPA_ofl_structs_match_exp_put64(match, OXM_OF_OFDPA_VALUE64, exp_id, tmp_exp_type, ntoh64(*((uint64_t*) value)));
             return 0;
     }
     NOT_REACHED();
@@ -523,14 +528,14 @@ oxm_pull_match(struct ofpbuf *buf, struct ofl_match * match_dst, int match_len)
         }
         /*else if (!oxm_prereqs_ok(f, match_dst)) {
             error = ofp_mkerr(OFPET_BAD_MATCH, OFPBMC_BAD_PREREQ);
-        }*/
+        }
         else if (check_oxm_dup(match_dst,f)){
             error = ofp_mkerr(OFPET_BAD_MATCH, OFPBMC_DUP_FIELD);
-        }
+        }*/
         else {
             if(0xFFFF == OXM_VENDOR(f->header))
             {
-                error = OFDPA_parse_oxm_entry(match_dst, f, p+8/*exp_type*/, p+10/*data*/, p+10+(length-6)/2);
+                error = OFDPA_parse_oxm_entry(match_dst, f, p+4/*experimenter*/, p+8/*exp_type*/, p+10/*data*/, p+10+(length-6)/2);
             }
             else
             {
@@ -572,10 +577,10 @@ oxm_entry_ok(const void *p, unsigned int match_len)
     memcpy(&header, p, 4);
     header = ntohl(header);
     payload_len = OXM_LENGTH(header);
-    VLOG_DBG(LOG_MODULE, "oxm_entry %08"PRIx32" to be decoded "
+    VLOG_DBG(LOG_MODULE, "oxm_entry 0x%08"PRIx32" to be decoded "
                     " with length == %"PRIu32"", OXM_FIELD(header), OXM_LENGTH(header));
     if (!payload_len) {
-        VLOG_DBG(LOG_MODULE, "oxm_entry %08"PRIx32" has invalid payload "
+        VLOG_DBG(LOG_MODULE, "oxm_entry 0x%08"PRIx32" has invalid payload "
                     "length 0", header);
         return 0;
     }

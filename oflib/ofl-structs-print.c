@@ -39,10 +39,12 @@
 #include <netinet/in.h>
 #include "oxm-match.h"
 #include "openflow/openflow.h"
+#include "include/openflow/openflow-ext.h"
 
 #include "ofl.h"
 #include "ofl-actions.h"
 #include "ofl-structs.h"
+#include "../oflib-exp/ofl-exp-openflow.h"
 #include "ofl-print.h"
 #include "ofl-packets.h"
 
@@ -63,6 +65,7 @@
 
 static void print_oxm_match(FILE *stream, struct ofl_match *m);
 static void OFDPA_print_oxm_exp_tlv(FILE *stream, struct OFDPA_ofl_match_exp_tlv *f, size_t *size);
+static void OFDPA_print_oxm_accton_exp_tlv(FILE *stream, struct OFDPA_ofl_match_exp_tlv *f, size_t *size);
 
 char *
 ofl_structs_port_to_string(struct ofl_port *port) {
@@ -582,7 +585,14 @@ ATN_print_oxm_exp_tlv(FILE *stream, struct ATN_ofl_match_exp_tlv *f, size_t *siz
  */
 static void OFDPA_print_oxm_exp_tlv(FILE *stream, struct OFDPA_ofl_match_exp_tlv *f, size_t *size)
 {
+    uint32_t experimenter = f->experimenter;
     uint16_t field = f->exp_type;
+
+    if(OPENFLOW_ACCTON_ID == experimenter)
+    {
+        OFDPA_print_oxm_accton_exp_tlv(stream, f, size);
+        return;
+    }
 
     if (field == OFDPA_OFPXMT_OFB_VRF)
     {
@@ -690,6 +700,43 @@ static void OFDPA_print_oxm_exp_tlv(FILE *stream, struct OFDPA_ofl_match_exp_tlv
     {
         fprintf(stream, "\"ofdpa_actset_output\":%d", *((uint32_t*) f->exp_data_p));
         *size -= (10+4);
+    }
+
+    if (*size > 4)
+    {
+        fprintf(stream, ", ");
+    }
+}
+
+static void OFDPA_print_oxm_accton_exp_tlv(FILE *stream, struct OFDPA_ofl_match_exp_tlv *f, size_t *size)
+{
+    uint16_t field = f->exp_type;
+
+    if (field == ACCTON_OFPXMT_OFB_INPORTS)
+    {
+        fprintf(stream, "\"accton_in_ports\":\"0x%llX\"", *((uint64_t*) f->exp_data_p));
+        *size -= (10+8);
+    }
+    else if (field == ACCTON_OFPXMT_OFB_UDF_OFFSET)
+    {
+        fprintf(stream, "\"accton_udf_offset\":%d", *((uint16_t*) f->exp_data_p));
+        *size -= (10+2);
+    }
+    else if (field == ACCTON_OFPXMT_OFB_UDF_DATA)
+    {
+        fprintf(stream, "\"accton_udf_data\":\"0x%X", *((uint32_t*) f->exp_data_p));
+        *size -= (10+4);
+
+        if (OXM_HASMASK(f->header))
+        {
+            uint8_t *accton_ufd_data_mask = (uint8_t*) f->exp_data_p + 4;
+            *size -= 4;
+            fprintf(stream, "/0x%X\"", *((uint32_t*)accton_ufd_data_mask));
+        }
+        else
+        {
+            fprintf(stream, "\"");
+        }
     }
 
     if (*size > 4)
@@ -826,6 +873,30 @@ ofl_structs_queue_prop_print(FILE *stream, struct ofl_queue_prop_header *p) {
         case (OFPQT_MAX_RATE): {
             struct ofl_queue_prop_max_rate *pm = (struct ofl_queue_prop_max_rate *)p;
             fprintf(stream, ",{\"rate\":%u}", pm->rate);
+            break;
+        }
+
+        case (OFPQT_EXPERIMENTER): {
+            struct ofl_queue_prop_experimenter_wred *pm = (struct ofl_queue_prop_experimenter_wred *)p;
+
+            switch(pm->exp_type)
+            {
+                case OFPQT_WRED_MIN_THRESHOLD:
+                    fprintf(stream, ",{\"min_threshold\":%u}", pm->percentage);
+                    break;
+
+                case OFPQT_WRED_MAX_THRESHOLD:
+                    fprintf(stream, ",{\"mex_threshold\":%u}", pm->percentage);
+                    break;
+
+                case OFPQT_WRED_ECN_THRESHOLD:
+                    fprintf(stream, ",{\"ecn_threshold\":%u}", pm->percentage);
+                    break;
+
+                case OFPQT_WRED_DROP_PROB:
+                    fprintf(stream, ",{\"drop_prob\":%u}", pm->percentage);
+                    break;
+            }
             break;
         }
 

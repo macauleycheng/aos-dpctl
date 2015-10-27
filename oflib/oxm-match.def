@@ -107,6 +107,6 @@ DEFINE_FIELD_M    (OF_TUNNEL_ID,      OXM_DL_NONE,     0,              true)
 DEFINE_FIELD    (OF_OFDPA_VALUE8,   OXM_DL_NONE,     0,              false)
 DEFINE_FIELD    (OF_OFDPA_VALUE16,  OXM_DL_NONE,     0,              false)
 DEFINE_FIELD_M  (OF_OFDPA_VALUE32,  OXM_DL_NONE,     0,              true)
-/*DEFINE_FIELD    (OF_OFDPA_VALUE64,  OXM_DL_NONE,     0,              false)*/
+DEFINE_FIELD    (OF_OFDPA_VALUE64,  OXM_DL_NONE,     0,              false)
 
 #undef DEFINE_FIELD
