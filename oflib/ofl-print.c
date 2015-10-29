@@ -342,6 +342,7 @@ ofl_queue_prop_type_print(FILE *stream, uint16_t type) {
     switch (type) {
         case (OFPQT_MIN_RATE): { fprintf(stream, "\"minrate\""); return; }
         case (OFPQT_MAX_RATE): { fprintf(stream, "\"maxrate\""); return; }
+        case (OFPQT_EXPERIMENTER): { fprintf(stream, "\"wred\""); return; }
         default: {               fprintf(stream, "\"?(%u)\"", type); return; }
     }
 }

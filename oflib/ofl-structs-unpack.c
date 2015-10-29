@@ -42,6 +42,8 @@
 #include "ofl-log.h"
 #include "oxm-match.h"
 #include "openflow/openflow.h"
+#include "openflow/openflow-ext.h"
+#include "../oflib-exp/ofl-exp-openflow.h"
 
 #define LOG_MODULE ofl_str_u
 OFL_LOG_INIT(LOG_MODULE)
@@ -835,6 +837,7 @@ ofl_structs_queue_prop_unpack(struct ofp_queue_prop_header *src, size_t *len, st
             break;
 
         }
+#if 0
         case OFPQT_EXPERIMENTER:{
             struct ofp_queue_prop_experimenter *sp = (struct ofp_queue_prop_experimenter *)src;
             struct ofl_queue_prop_experimenter *dp = (struct ofl_queue_prop_experimenter *)malloc(sizeof(struct ofl_queue_prop_experimenter));
@@ -846,6 +849,23 @@ ofl_structs_queue_prop_unpack(struct ofp_queue_prop_header *src, size_t *len, st
             *len -= sizeof(struct ofp_queue_prop_experimenter);
             dp->data = sp->data;
 
+            *dst = (struct ofl_queue_prop_header *)dp;
+            break;
+
+        }
+#endif
+        case OFPQT_EXPERIMENTER:{
+            struct ofp_queue_prop_experimenter_wred *sp = (struct ofp_queue_prop_experimenter_wred *)src;
+            struct ofl_queue_prop_experimenter_wred *dp = (struct ofl_queue_prop_experimenter_wred *)malloc(sizeof(struct ofl_queue_prop_experimenter_wred));
+
+            if (*len < sizeof(struct ofp_queue_prop_experimenter_wred)) {
+                OFL_LOG_WARN(LOG_MODULE, "Received EXPERIMENTER queue property has invalid length (%zu).", *len);
+                return ofl_error(OFPET_BAD_ACTION, OFPBRC_BAD_LEN);
+            }
+            *len -= sizeof(struct ofp_queue_prop_experimenter_wred);
+            dp->experimenter = ntohl(sp->experimenter);
+            dp->exp_type = ntohs(sp->exp_type);
+            dp->percentage = ntohs(sp->percentage);
             *dst = (struct ofl_queue_prop_header *)dp;
             break;
 

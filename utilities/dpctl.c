@@ -233,6 +233,10 @@ static int
 ATN_parse32_pair(char *str, const char *separator, uint32_t *v0, uint32_t *v1);
 /* end AR#set-async */
 
+static void parse_exp_queue_mod_args(char *str_p, struct ofl_exp_openflow_msg_queue *req_p, uint16_t *type_p, uint32_t *queue_id_p);
+static void parse_exp_queue_mod_rate(char *str_p, struct ofl_packet_queue *pq);
+static void parse_exp_queue_mod_wred(char *str_p, struct ofl_packet_queue *pq);
+
 
 static struct ofl_exp_msg dpctl_exp_msg =
         {.pack      = ofl_exp_msg_pack,
@@ -987,7 +991,7 @@ set_desc(struct vconn *vconn, int argc UNUSED, char *argv[]) {
 }
 
 
-
+#if 0
 static void
 queue_mod(struct vconn *vconn, int argc UNUSED, char *argv[]) {
     struct ofl_packet_queue *pq;
@@ -1024,7 +1028,48 @@ queue_mod(struct vconn *vconn, int argc UNUSED, char *argv[]) {
 
     dpctl_send_and_print(vconn, (struct ofl_msg_header *)&msg);
 }
+#else
+/* cmd format:
+ *  dpctl tcp:192.168.1.1:6633 queue-mod type=rate,port=1,queue=0 min=50,max=80
+ *  dpctl tcp:192.168.1.1:6633 queue-mod type=wred,port=1,queue=0 min=20,max=60,ecn=50,drop=70
+ */
+static void
+queue_mod(struct vconn *vconn, int argc UNUSED, char *argv[]) {
+    struct ofl_packet_queue *pq;
+    struct ofl_exp_openflow_msg_queue msg =
+            {{{{.type = OFPT_EXPERIMENTER},
+            .experimenter_id = OPENFLOW_ACCTON_ID},
+            .type = OFP_EXT_QUEUE_RATE},
+            .port_id = OFPP_ANY,
+            .queue = NULL};
+    uint32_t queue_id = 0;
+    uint16_t cmd_type = 0;
 
+    if( (NULL == argv[0]) || (NULL == argv[1]) || (argc < 1) )
+    {
+        ofp_fatal(0, "Error parsing queue_mod.");
+    }
+
+    parse_exp_queue_mod_args(argv[0], &msg, &cmd_type, &queue_id);
+
+    pq = xmalloc(sizeof(struct ofl_packet_queue));
+    msg.header.type = cmd_type;
+    msg.queue = pq;
+    pq->queue_id = queue_id;
+    pq->properties_num = 0;
+
+    if(OFP_EXT_QUEUE_RATE == cmd_type)
+    {
+        parse_exp_queue_mod_rate(argv[1], pq);
+    }
+    else if(OFP_EXT_QUEUE_WRED == cmd_type)
+    {
+        parse_exp_queue_mod_wred(argv[1], pq);
+    }
+
+    dpctl_send_and_print(vconn, (struct ofl_msg_header *)&msg);
+}
+#endif
 
 
 static void
@@ -1121,7 +1166,7 @@ static struct command all_commands[] = {
     /**/
 
 
-    {"queue-mod", 3, 3, queue_mod},
+    {"queue-mod", 2, 2, queue_mod},
     {"queue-del", 2, 2, queue_del}
 };
 
@@ -3755,6 +3800,216 @@ ATN_parse_set_async_args(char *str, struct ofl_async_config *msg) {
     }
 }
 /* end AR#set-async */
+
+/* cmd format:
+ *  ... type=rate,port=1,queue=0 ...
+ *  ... type=wred,port=1,queue=0 ...
+ */
+static void parse_exp_queue_mod_args(char *str_p, struct ofl_exp_openflow_msg_queue *req_p, uint16_t *type_p, uint32_t *queue_id_p)
+{
+    char *token_p, *saveptr_p = NULL;
+
+    for (token_p = strtok_r(str_p, KEY_SEP, &saveptr_p); token_p != NULL; token_p = strtok_r(NULL, KEY_SEP, &saveptr_p))
+    {
+        if (strncmp(token_p, EXP_QUEUE_MOD_TYPE KEY_VAL, strlen(EXP_QUEUE_MOD_TYPE KEY_VAL)) == 0)
+        {
+            if (parse16(token_p + strlen(EXP_QUEUE_MOD_TYPE KEY_VAL), exp_queue_mod_type_names, NUM_ELEMS(exp_queue_mod_type_names),0, type_p))
+            {
+                ofp_fatal(0, "Error parsing queue_mod type: %s.", token_p);
+            }
+            continue;
+        }
+
+        if (strncmp(token_p, EXP_QUEUE_MOD_PORT KEY_VAL, strlen(EXP_QUEUE_MOD_PORT KEY_VAL)) == 0)
+        {
+            if (parse_port(token_p + strlen(EXP_QUEUE_MOD_PORT KEY_VAL), &req_p->port_id))
+            {
+                ofp_fatal(0, "Error parsing queue_mod port: %s.", token_p);
+            }
+            continue;
+        }
+
+        if (strncmp(token_p, EXP_QUEUE_MOD_QUEUE KEY_VAL, strlen(EXP_QUEUE_MOD_QUEUE KEY_VAL)) == 0)
+        {
+            if (parse_queue(token_p + strlen(EXP_QUEUE_MOD_QUEUE KEY_VAL), queue_id_p))
+            {
+                ofp_fatal(0, "Error parsing queue_mod queue_id: %s.", token_p);
+            }
+            continue;
+        }
+        ofp_fatal(0, "Error parsing queue_mod arg: %s.", token_p);
+    }
+}
+
+/* cmd format:
+ *  ... min=50,max=80
+ */
+static void parse_exp_queue_mod_rate(char *str_p, struct ofl_packet_queue *pq)
+{
+    char *token_p, *saveptr_p = NULL;
+    uint16_t tmp_rate = 0;
+
+    for (token_p = strtok_r(str_p, KEY_SEP, &saveptr_p); token_p != NULL; token_p = strtok_r(NULL, KEY_SEP, &saveptr_p))
+    {
+        if (strncmp(token_p, EXP_QUEUE_MOD_RATE_MIN KEY_VAL, strlen(EXP_QUEUE_MOD_RATE_MIN KEY_VAL)) == 0)
+        {
+            struct ofl_queue_prop_min_rate *p;
+
+            if (parse16(token_p + strlen(EXP_QUEUE_MOD_RATE_MIN KEY_VAL), NULL, 0, 1000, &tmp_rate))
+            {
+                ofp_fatal(0, "Error parsing queue_mod min rate: %s.", token_p);
+            }
+
+            if(0 == pq->properties_num)
+            {
+                pq->properties = xmalloc(sizeof(struct ofl_queue_prop_header *));
+            }
+
+            p = xmalloc(sizeof(struct ofl_queue_prop_min_rate));
+            pq->properties[pq->properties_num] = (struct ofl_queue_prop_header *)p;
+            p->header.type = OFPQT_MIN_RATE;
+            p->rate = tmp_rate;
+            pq->properties_num += 1;
+
+            continue;
+        }
+
+        if (strncmp(token_p, EXP_QUEUE_MOD_RATE_MAX KEY_VAL, strlen(EXP_QUEUE_MOD_RATE_MAX KEY_VAL)) == 0)
+        {
+            struct ofl_queue_prop_max_rate *p;
+
+            if (parse16(token_p + strlen(EXP_QUEUE_MOD_RATE_MAX KEY_VAL), NULL, 0, 1000, &tmp_rate))
+            {
+                ofp_fatal(0, "Error parsing queue_mod max rate: %s.", token_p);
+            }
+
+            if(0 == pq->properties_num)
+            {
+                pq->properties = xmalloc(sizeof(struct ofl_queue_prop_header *));
+            }
+
+            p = xmalloc(sizeof(struct ofl_queue_prop_max_rate));
+            pq->properties[pq->properties_num] = (struct ofl_queue_prop_header *)p;
+            p->header.type = OFPQT_MAX_RATE;
+            p->rate = tmp_rate;
+            pq->properties_num += 1;
+
+            continue;
+        }
+
+        ofp_fatal(0, "Error parsing queue_mod arg: %s.", token_p);
+    }
+}
+
+/* cmd format:
+ *  ... min=20,max=60,ecn=50,drop=70
+ */
+static void parse_exp_queue_mod_wred(char *str_p, struct ofl_packet_queue *pq)
+{
+    char *token_p, *saveptr_p = NULL;
+    uint16_t tmp_percentage = 0;
+
+    for (token_p = strtok_r(str_p, KEY_SEP, &saveptr_p); token_p != NULL; token_p = strtok_r(NULL, KEY_SEP, &saveptr_p))
+    {
+        if (strncmp(token_p, EXP_QUEUE_MOD_WRED_MIN KEY_VAL, strlen(EXP_QUEUE_MOD_WRED_MIN KEY_VAL)) == 0)
+        {
+            struct ofl_queue_prop_experimenter_wred *p;
+
+            if (parse16(token_p + strlen(EXP_QUEUE_MOD_WRED_MIN KEY_VAL), NULL, 0, 100, &tmp_percentage))
+            {
+                ofp_fatal(0, "Error parsing queue_mod min rate: %s.", token_p);
+            }
+
+            if(0 == pq->properties_num)
+            {
+                pq->properties = xmalloc(sizeof(struct ofl_queue_prop_header *));
+            }
+
+            p = xmalloc(sizeof(struct ofl_queue_prop_experimenter_wred));
+            pq->properties[pq->properties_num] = (struct ofl_queue_prop_header *)p;
+            p->header.type = OFPQT_EXPERIMENTER;
+            p->experimenter = OPENFLOW_ACCTON_ID;
+            p->exp_type = OFPQT_WRED_MIN_THRESHOLD;
+            p->percentage = tmp_percentage;
+            pq->properties_num += 1;
+            continue;
+        }
+
+        if (strncmp(token_p, EXP_QUEUE_MOD_WRED_MAX KEY_VAL, strlen(EXP_QUEUE_MOD_WRED_MAX KEY_VAL)) == 0)
+        {
+            struct ofl_queue_prop_experimenter_wred *p;
+
+            if (parse16(token_p + strlen(EXP_QUEUE_MOD_WRED_MAX KEY_VAL), NULL, 0, 100, &tmp_percentage))
+            {
+                ofp_fatal(0, "Error parsing queue_mod max rate: %s.", token_p);
+            }
+
+            if(0 == pq->properties_num)
+            {
+                pq->properties = xmalloc(sizeof(struct ofl_queue_prop_header *));
+            }
+
+            p = xmalloc(sizeof(struct ofl_queue_prop_experimenter_wred));
+            pq->properties[pq->properties_num] = (struct ofl_queue_prop_header *)p;
+            p->header.type = OFPQT_EXPERIMENTER;
+            p->experimenter = OPENFLOW_ACCTON_ID;
+            p->exp_type = OFPQT_WRED_MAX_THRESHOLD;
+            p->percentage = tmp_percentage;
+            pq->properties_num += 1;
+            continue;
+        }
+
+        if (strncmp(token_p, EXP_QUEUE_MOD_WRED_ECN KEY_VAL, strlen(EXP_QUEUE_MOD_WRED_ECN KEY_VAL)) == 0)
+        {
+            struct ofl_queue_prop_experimenter_wred *p;
+
+            if (parse16(token_p + strlen(EXP_QUEUE_MOD_WRED_ECN KEY_VAL), NULL, 0, 100, &tmp_percentage))
+            {
+                ofp_fatal(0, "Error parsing queue_mod ecn rate: %s.", token_p);
+            }
+
+            if(0 == pq->properties_num)
+            {
+                pq->properties = xmalloc(sizeof(struct ofl_queue_prop_header *));
+            }
+
+            p = xmalloc(sizeof(struct ofl_queue_prop_experimenter_wred));
+            pq->properties[pq->properties_num] = (struct ofl_queue_prop_header *)p;
+            p->header.type = OFPQT_EXPERIMENTER;
+            p->experimenter = OPENFLOW_ACCTON_ID;
+            p->exp_type = OFPQT_WRED_ECN_THRESHOLD;
+            p->percentage = tmp_percentage;
+            pq->properties_num += 1;
+            continue;
+        }
+
+        if (strncmp(token_p, EXP_QUEUE_MOD_WRED_DROP KEY_VAL, strlen(EXP_QUEUE_MOD_WRED_DROP KEY_VAL)) == 0)
+        {
+            struct ofl_queue_prop_experimenter_wred *p;
+
+            if (parse16(token_p + strlen(EXP_QUEUE_MOD_WRED_DROP KEY_VAL), NULL, 0, 100, &tmp_percentage))
+            {
+                ofp_fatal(0, "Error parsing queue_mod ecn rate: %s.", token_p);
+            }
+
+            if(0 == pq->properties_num)
+            {
+                pq->properties = xmalloc(sizeof(struct ofl_queue_prop_header *));
+            }
+
+            p = xmalloc(sizeof(struct ofl_queue_prop_experimenter_wred));
+            pq->properties[pq->properties_num] = (struct ofl_queue_prop_header *)p;
+            p->header.type = OFPQT_EXPERIMENTER;
+            p->experimenter = OPENFLOW_ACCTON_ID;
+            p->exp_type = OFPQT_WRED_DROP_PROB;
+            p->percentage = tmp_percentage;
+            pq->properties_num += 1;
+            continue;
+        }
+
+        ofp_fatal(0, "Error parsing queue_mod arg: %s.", token_p);
+    }
+}
 
 
 static int

@@ -17,14 +17,25 @@
  */
 
 #define OPENFLOW_VENDOR_ID 0x000026e1
+#define OPENFLOW_ACCTON_ID 0x007072CF
 
 enum ofp_extension_commands { /* Queue configuration commands */
+    OFP_EXT_QUEUE_RATE = 0, /* Set queue rate */
+    OFP_EXT_QUEUE_WRED = 1,  /* Set queue WRED */
+
     /* Queue Commands */
     OFP_EXT_QUEUE_MODIFY,  /* Add and/or modify */
     OFP_EXT_QUEUE_DELETE,  /* Remove a queue */
     OFP_EXT_SET_DESC,      /* Set ofp_desc_stat->dp_desc */
 
     OFP_EXT_COUNT
+};
+
+enum ofp_queue_properties_wred {
+    OFPQT_WRED_MIN_THRESHOLD = 1, /* Minimum threshold */
+    OFPQT_WRED_MAX_THRESHOLD = 2, /* Maximum threshold */
+    OFPQT_WRED_ECN_THRESHOLD = 3, /* ECN threshold */
+    OFPQT_WRED_DROP_PROB = 4 /* drop probability */
 };
 
 struct ofp_extension_header {
@@ -47,6 +58,19 @@ struct openflow_queue_command_header {
     uint8_t body[0];            /* Body of ofp_queue objects for op. */
 };
 OFP_ASSERT(sizeof(struct openflow_queue_command_header) == 24);
+
+/* re-define struct ofp_queue_prop_experimenter
+ */
+struct ofp_queue_prop_experimenter_wred {
+    struct ofp_queue_prop_header prop_header;
+    uint32_t experimenter;
+    uint16_t exp_type;      /* OFPQT_WRED_XXX */
+    uint16_t percentage;
+};
+OFP_ASSERT(sizeof(struct ofp_queue_prop_experimenter_wred) == 16);
+
+
+
 
 /* NOTE
  * Bug number: TBD.

@@ -34,10 +34,12 @@
 #include <netinet/in.h>
 
 #include "include/openflow/openflow.h"
+#include "include/openflow/openflow-ext.h"
 #include "oxm-match.h"
 #include "ofl.h"
 #include "ofl-actions.h"
 #include "ofl-structs.h"
+#include "../oflib-exp/ofl-exp-openflow.h"
 #include "ofl-utils.h"
 #include "ofl-log.h"
 #include "ofl-packets.h"
@@ -797,6 +799,7 @@ ofl_structs_queue_prop_pack(struct ofl_queue_prop_header *src,
 
             return sizeof(struct ofp_queue_prop_max_rate);
         }
+#if 0
         case OFPQT_EXPERIMENTER:{
             //struct ofl_queue_prop_experimenter *sp = (struct ofl_queue_prop_experimenter *)src;
             struct ofp_queue_prop_experimenter *dp = (struct ofp_queue_prop_experimenter*)dst;
@@ -806,6 +809,17 @@ ofl_structs_queue_prop_pack(struct ofl_queue_prop_header *src,
             //dp->data = sp->data;
             return sizeof(struct ofp_queue_prop_experimenter);
         }
+#endif
+        case OFPQT_EXPERIMENTER:{
+            struct ofl_queue_prop_experimenter_wred *sp = (struct ofl_queue_prop_experimenter_wred *)src;
+            struct ofp_queue_prop_experimenter_wred *dp = (struct ofp_queue_prop_experimenter_wred *)dst;
+            dp->prop_header.len = htons(sizeof(struct ofp_queue_prop_experimenter_wred));
+            dp->experimenter = htonl(sp->experimenter);
+            dp->exp_type = htons(sp->exp_type);
+            dp->percentage = htons(sp->percentage);
+            return sizeof(struct ofp_queue_prop_experimenter_wred);
+        }
+
         default: {
             return 0;
         }
@@ -830,7 +844,7 @@ ofl_structs_packet_queue_ofp_len(struct ofl_packet_queue *queue) {
 }
 
 size_t
-ofl_structs_packet_queue_pack(struct ofl_packet_queue *src, struct ofp_packet_queue *dst) {
+ofl_structs_packet_queue_pack(struct ofl_packet_queue *src, struct ofp_packet_queue *dst, uint32_t port) {
     size_t total_len, len;
     uint8_t *data;
     size_t i;
@@ -841,6 +855,7 @@ ofl_structs_packet_queue_pack(struct ofl_packet_queue *src, struct ofp_packet_qu
 
     dst->len = htons(total_len);
     memset(dst->pad, 0x00, sizeof(dst->pad));
+    dst->port = htonl(port);
     dst->queue_id = htonl(src->queue_id);
 
     data = (uint8_t *)dst + sizeof(struct ofp_packet_queue);

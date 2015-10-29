@@ -33,6 +33,7 @@
 #define DPCTL_H 1
 
 #include "openflow/openflow.h"
+#include "openflow/openflow-ext.h"
 
 struct names8 {
     uint8_t   code;
@@ -208,6 +209,11 @@ static struct names16 band_names[] = {
     {OFPMBT_EXPERIMENTER, "exp"}
 };
 
+static struct names16 exp_queue_mod_type_names[] = {
+    {OFP_EXT_QUEUE_RATE, "rate"},
+    {OFP_EXT_QUEUE_WRED, "wred"}
+};
+
 /**/
 static struct names32 role_names[] = {
         {OFPCR_ROLE_EQUAL,        "equal"},
@@ -311,6 +317,11 @@ static struct names32 role_names[] = {
 /* End of OFDPA2.0
  */
 
+#define MATCH_ACCTON_INPORTS "accton_in_ports"
+#define MATCH_ACCTON_UDF_OFFSET "accton_udf_offset"
+#define MATCH_ACCTON_UDF_DATA "accton_udf_data"
+#define ACCTON_EXPERIMENTER_ID 0x7072cf
+
 
 #define GROUP_MOD_COMMAND "cmd"
 #define GROUP_MOD_TYPE    "type"
@@ -368,6 +379,18 @@ static struct names32 role_names[] = {
 #define PORT_STATUS_MASK    "port_status_mask"
 #define FLOW_REMOVED_MASK   "flow_removed_mask"
 /* end AR#set-async */
+
+#define EXP_QUEUE_MOD_TYPE   "type"
+#define EXP_QUEUE_MOD_PORT   "port"
+#define EXP_QUEUE_MOD_QUEUE  "queue"
+
+#define EXP_QUEUE_MOD_RATE_MIN   "min"
+#define EXP_QUEUE_MOD_RATE_MAX   "max"
+
+#define EXP_QUEUE_MOD_WRED_MIN   "min"
+#define EXP_QUEUE_MOD_WRED_MAX   "max"
+#define EXP_QUEUE_MOD_WRED_ECN   "ecn"
+#define EXP_QUEUE_MOD_WRED_DROP  "drop"
 
 #define KEY_VAL    "="
 #define KEY_VAL2   ":"

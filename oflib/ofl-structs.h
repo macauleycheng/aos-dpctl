@@ -591,7 +591,7 @@ size_t
 ofl_structs_queue_prop_pack(struct ofl_queue_prop_header *src, struct ofp_queue_prop_header *dst);
 
 size_t
-ofl_structs_packet_queue_pack(struct ofl_packet_queue *src, struct ofp_packet_queue *dst);
+ofl_structs_packet_queue_pack(struct ofl_packet_queue *src, struct ofp_packet_queue *dst, uint32_t port);
 
 size_t
 ofl_structs_port_stats_pack(struct ofl_port_stats *src, struct ofp_port_stats *dst);

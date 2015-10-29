@@ -54,7 +54,6 @@
 #include "packets.h"
 #include "../oflib/ofl-structs.h"
 
-
 #define OXM_HEADER__(VENDOR, FIELD, HASMASK, LENGTH) \
     (((VENDOR) << 16) | ((FIELD) << 9) | ((HASMASK) << 8) | (LENGTH))
 #define OXM_HEADER(VENDOR, FIELD, LENGTH) \

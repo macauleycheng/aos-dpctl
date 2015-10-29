@@ -62,7 +62,7 @@ ofl_exp_openflow_msg_pack(struct ofl_msg_experimenter *msg, uint8_t **buf, size_
                 ofp->port = htonl(q->port_id);
                 memset(ofp->pad, 0, sizeof(ofp->pad));
 
-                ofl_structs_packet_queue_pack(q->queue, (struct ofp_packet_queue *)ofp->body);
+                ofl_structs_packet_queue_pack(q->queue, (struct ofp_packet_queue *)ofp->body, q->port_id);
                 return 0;
             }
             case (OFP_EXT_SET_DESC): {
@@ -84,7 +84,37 @@ ofl_exp_openflow_msg_pack(struct ofl_msg_experimenter *msg, uint8_t **buf, size_
                 return -1;
             }
         }
-    } else {
+    }
+    else if(OPENFLOW_ACCTON_ID == msg->experimenter_id)
+    {
+        struct ofl_exp_openflow_msg_header *exp = (struct ofl_exp_openflow_msg_header *)msg;
+        switch (exp->type)
+        {
+            case OFP_EXT_QUEUE_RATE:
+            case OFP_EXT_QUEUE_WRED: {
+                struct ofl_exp_openflow_msg_queue *q = (struct ofl_exp_openflow_msg_queue *)exp;
+                struct openflow_queue_command_header *ofp;
+
+                *buf_len = sizeof(struct openflow_queue_command_header) + ofl_structs_packet_queue_ofp_len(q->queue);
+                *buf     = (uint8_t *)malloc(*buf_len);
+
+                ofp = (struct openflow_queue_command_header *)(*buf);
+                ofp->header.vendor  = htonl(exp->header.experimenter_id);
+                ofp->header.subtype = htonl(exp->type);
+                ofp->port = htonl(q->port_id);
+                memset(ofp->pad, 0, sizeof(ofp->pad));
+
+                ofl_structs_packet_queue_pack(q->queue, (struct ofp_packet_queue *)ofp->body, q->port_id);
+                return 0;
+            }
+
+            default: {
+                OFL_LOG_WARN(LOG_MODULE, "Trying to print unknown Openflow Experimenter message.");
+                return -1;
+            }
+        }
+    }
+    else {
         OFL_LOG_WARN(LOG_MODULE, "Trying to print non-Openflow Experimenter message.");
         return -1;
     }
@@ -158,7 +188,47 @@ ofl_exp_openflow_msg_unpack(struct ofp_header *oh, size_t *len, struct ofl_msg_e
                 return ofl_error(OFPET_BAD_REQUEST, OFPBRC_BAD_EXPERIMENTER);
             }
         }
-    } else {
+    }
+    else if(OPENFLOW_ACCTON_ID == ntohl(exp->vendor))
+    {
+        switch (ntohl(exp->subtype))
+        {
+            case OFP_EXT_QUEUE_RATE:
+            case OFP_EXT_QUEUE_WRED: {
+                struct openflow_queue_command_header *src;
+                struct ofl_exp_openflow_msg_queue *dst;
+                ofl_err error;
+
+                if (*len < sizeof(struct openflow_queue_command_header)) {
+                    OFL_LOG_WARN(LOG_MODULE, "Received EXT_QUEUE_MODIFY message has invalid length (%zu).", *len);
+                    return ofl_error(OFPET_BAD_REQUEST, OFPBRC_BAD_LEN);
+                }
+                *len -= sizeof(struct openflow_queue_command_header);
+
+                src = (struct openflow_queue_command_header *)exp;
+
+                dst = (struct ofl_exp_openflow_msg_queue *)malloc(sizeof(struct ofl_exp_openflow_msg_queue));
+                dst->header.header.experimenter_id = ntohl(exp->vendor);
+                dst->header.type                   = ntohl(exp->subtype);
+                dst->port_id                       = ntohl(src->port);
+
+                error = ofl_structs_packet_queue_unpack((struct ofp_packet_queue *)(src->body), len, &(dst->queue));
+                if (error) {
+                    free(dst);
+                    return error;
+                }
+
+                (*msg) = (struct ofl_msg_experimenter *)dst;
+                return 0;
+            }
+
+            default: {
+                OFL_LOG_WARN(LOG_MODULE, "Trying to unpack unknown Openflow Experimenter message.");
+                return ofl_error(OFPET_BAD_REQUEST, OFPBRC_BAD_EXPERIMENTER);
+            }
+        }
+    }
+    else {
         OFL_LOG_WARN(LOG_MODULE, "Trying to unpack non-Openflow Experimenter message.");
         return ofl_error(OFPET_BAD_REQUEST, OFPBRC_BAD_EXPERIMENTER);
     }
@@ -186,7 +256,25 @@ ofl_exp_openflow_msg_free(struct ofl_msg_experimenter *msg) {
                 OFL_LOG_WARN(LOG_MODULE, "Trying to free unknown Openflow Experimenter message.");
             }
         }
-    } else {
+    }
+    else if(OPENFLOW_ACCTON_ID == msg->experimenter_id)
+    {
+        struct ofl_exp_openflow_msg_header *exp = (struct ofl_exp_openflow_msg_header *)msg;
+        switch (exp->type)
+        {
+            case OFP_EXT_QUEUE_RATE:
+            case OFP_EXT_QUEUE_WRED: {
+                struct ofl_exp_openflow_msg_queue *q = (struct ofl_exp_openflow_msg_queue *)exp;
+                ofl_structs_free_packet_queue(q->queue);
+                break;
+            }
+
+            default: {
+                OFL_LOG_WARN(LOG_MODULE, "Trying to free unknown Openflow Experimenter message.");
+            }
+        }
+    }
+    else {
         OFL_LOG_WARN(LOG_MODULE, "Trying to free non-Openflow Experimenter message.");
     }
     free(msg);
@@ -222,7 +310,30 @@ ofl_exp_openflow_msg_to_string(struct ofl_msg_experimenter *msg) {
                 fprintf(stream, "ofexp{type=\"%u\"}", exp->type);
             }
         }
-    } else {
+    }
+    else if(OPENFLOW_ACCTON_ID == msg->experimenter_id)
+    {
+        struct ofl_exp_openflow_msg_header *exp = (struct ofl_exp_openflow_msg_header *)msg;
+        switch (exp->type)
+        {
+            case OFP_EXT_QUEUE_RATE:
+            case OFP_EXT_QUEUE_WRED: {
+                struct ofl_exp_openflow_msg_queue *q = (struct ofl_exp_openflow_msg_queue *)exp;
+                fprintf(stream, "\"queue\",{\"port\":");
+                ofl_port_print(stream, q->port_id);
+                fprintf(stream, ", \"queue\":");
+                ofl_structs_queue_print(stream, q->queue);
+                fprintf(stream, "}");
+                break;
+            }
+
+            default: {
+                OFL_LOG_WARN(LOG_MODULE, "Trying to print unknown Openflow Experimenter message.");
+                fprintf(stream, "ofexp{type=\"%u\"}", exp->type);
+            }
+        }
+    }
+    else {
         OFL_LOG_WARN(LOG_MODULE, "Trying to print non-Openflow Experimenter message.");
         fprintf(stream, "exp{exp_id=\"%u\"}", msg->experimenter_id);
     }

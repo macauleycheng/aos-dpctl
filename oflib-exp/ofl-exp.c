@@ -56,6 +56,7 @@ OFL_LOG_INIT(LOG_MODULE)
 int
 ofl_exp_msg_pack(struct ofl_msg_experimenter *msg, uint8_t **buf, size_t *buf_len) {
     switch (msg->experimenter_id) {
+        case (OPENFLOW_ACCTON_ID):
         case (OPENFLOW_VENDOR_ID): {
             return ofl_exp_openflow_msg_pack(msg, buf, buf_len);
         }
@@ -78,6 +79,7 @@ ofl_exp_msg_unpack(struct ofp_header *oh, size_t *len, struct ofl_msg_experiment
     exp = (struct ofp_experimenter_header *)oh;
 
     switch (htonl(exp->experimenter)) {
+        case (OPENFLOW_ACCTON_ID):
         case (OPENFLOW_VENDOR_ID): {
             return ofl_exp_openflow_msg_unpack(oh, len, msg);
         }
@@ -91,6 +93,7 @@ ofl_exp_msg_unpack(struct ofp_header *oh, size_t *len, struct ofl_msg_experiment
 int
 ofl_exp_msg_free(struct ofl_msg_experimenter *msg) {
     switch (msg->experimenter_id) {
+        case (OPENFLOW_ACCTON_ID):
         case (OPENFLOW_VENDOR_ID): {
             return ofl_exp_openflow_msg_free(msg);
         }
@@ -105,6 +108,7 @@ ofl_exp_msg_free(struct ofl_msg_experimenter *msg) {
 char *
 ofl_exp_msg_to_string(struct ofl_msg_experimenter *msg) {
     switch (msg->experimenter_id) {
+        case (OPENFLOW_ACCTON_ID):
         case (OPENFLOW_VENDOR_ID): {
             return ofl_exp_openflow_msg_to_string(msg);
         }

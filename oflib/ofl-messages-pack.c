@@ -962,7 +962,7 @@ ofl_msg_pack_queue_get_config_reply(struct ofl_msg_queue_get_config_reply *msg, 
     data = (uint8_t *)resp->queues;
 
     for (i=0; i<msg->queues_num; i++) {
-        data += ofl_structs_packet_queue_pack(msg->queues[i], (struct ofp_packet_queue *)data);
+        data += ofl_structs_packet_queue_pack(msg->queues[i], (struct ofp_packet_queue *)data, msg->port);
     }
 
     return 0;

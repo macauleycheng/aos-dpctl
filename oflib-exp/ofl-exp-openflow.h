@@ -57,6 +57,15 @@ struct ofl_exp_openflow_msg_set_dp_desc {
     char  *dp_desc;
 };
 
+/* re-define struct ofl_queue_prop_experimenter
+ */
+struct ofl_queue_prop_experimenter_wred {
+    struct ofl_queue_prop_header header; /* prop: OFPQT_EXPERIMENTER, len: 16. */
+    uint32_t experimenter;
+    uint16_t exp_type;
+    uint16_t percentage;
+};
+
 
 
 int
