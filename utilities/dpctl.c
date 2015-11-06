@@ -2654,7 +2654,11 @@ parse_set_field(char *token, struct ofl_action_set_field *act) {
         else {
             act->field = (struct ofl_match_tlv*) malloc(sizeof(struct ofl_match_tlv));
             act->field->header = OXM_OF_TUNNEL_ID;
+#if __BYTE_ORDER == __BIG_ENDIAN
             *tunnel_id = ntohll(tmp_tunnel_id);
+#else
+            *tunnel_id = tmp_tunnel_id;
+#endif
             act->field->value = (uint8_t*) tunnel_id;
         }
         return 0;
@@ -4260,7 +4264,11 @@ parse_nw_addr(char *str, uint32_t *addr, uint32_t **mask) {
 
     if (sscanf(str, "%"SCNu8".%"SCNu8".%"SCNu8".%"SCNu8,
                &a[3], &a[2], &a[1], &a[0]) == 4) {
+#if __BYTE_ORDER == __BIG_ENDIAN
             *addr = (a[3] << 24) | (a[2] << 16) | (a[1] << 8) | a[0];
+#else
+            *addr = (a[0] << 24) | (a[1] << 16) | (a[2] << 8) | a[3];
+#endif
     }
     else {
         return -1;
@@ -4288,7 +4296,11 @@ parse_nw_addr(char *str, uint32_t *addr, uint32_t **mask) {
         /*Arbitrary mask*/
         if (sscanf(saveptr, "%"SCNu8".%"SCNu8".%"SCNu8".%"SCNu8,
                &b[3], &b[2], &b[1], &b[0]) == 4) {
+#if __BYTE_ORDER == __BIG_ENDIAN
             **mask = (b[3] << 24) | (b[2] << 16) | (b[1] << 8) | b[0];
+#else
+            **mask = (b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3];
+#endif
         }
         else {
             return -1;
