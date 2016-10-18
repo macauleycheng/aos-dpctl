@@ -550,7 +550,7 @@ char* OFDPA_ofl_exp_action_to_string(struct ofl_action_header *act)
         {
             struct OFDPA_ofl_action_exp_set_u32 *tmp_act_exp_p = (struct OFDPA_ofl_action_exp_set_u32*) act;
 
-            sprintf(msg, ",{\"%s\":%ld}", "OFDPA_ACT_OAM_LM_RX_COUNT", tmp_act_exp_p->value);
+            sprintf(msg, ",{\"%s\":%"PRIu32"}", "OFDPA_ACT_OAM_LM_RX_COUNT", tmp_act_exp_p->value);
             break;
         }
 
@@ -558,7 +558,7 @@ char* OFDPA_ofl_exp_action_to_string(struct ofl_action_header *act)
         {
             struct OFDPA_ofl_action_exp_set_u32 *tmp_act_exp_p = (struct OFDPA_ofl_action_exp_set_u32*) act;
 
-            sprintf(msg, ",{\"%s\":%ld}", "OFDPA_ACT_OAM_LM_TX_COUNT", tmp_act_exp_p->value);
+            sprintf(msg, ",{\"%s\":%"PRIu32"}", "OFDPA_ACT_OAM_LM_TX_COUNT", tmp_act_exp_p->value);
             break;
         }
 
@@ -566,7 +566,7 @@ char* OFDPA_ofl_exp_action_to_string(struct ofl_action_header *act)
         {
             struct OFDPA_ofl_action_exp_set_u32 *tmp_act_exp_p = (struct OFDPA_ofl_action_exp_set_u32*) act;
 
-            sprintf(msg, ",{\"%s\":%ld}", "OFDPA_ACT_OAM_SET_COUNTER_FIELDS", tmp_act_exp_p->value);
+            sprintf(msg, ",{\"%s\":%"PRIu32"}", "OFDPA_ACT_OAM_SET_COUNTER_FIELDS", tmp_act_exp_p->value);
             break;
         }
 
@@ -574,7 +574,7 @@ char* OFDPA_ofl_exp_action_to_string(struct ofl_action_header *act)
         {
             struct OFDPA_ofl_action_exp_drop_status *tmp_act_exp_p = (struct OFDPA_ofl_action_exp_drop_status*) act;
 
-            sprintf(msg, ",{\"%s\":\"index %ld & type %d\"", "OFDPA_ACT_CHECK_DROP_STATUS", tmp_act_exp_p->drop_index, tmp_act_exp_p->drop_type);
+            sprintf(msg, ",{\"%s\":\"index %"PRIu32" & type %d\"", "OFDPA_ACT_CHECK_DROP_STATUS", tmp_act_exp_p->drop_index, tmp_act_exp_p->drop_type);
             break;
         }
     }

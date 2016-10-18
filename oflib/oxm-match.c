@@ -106,7 +106,7 @@ static struct oxm_field oxm_fields[N_OXM_FIELDS] = {
 /* Hash table of 'oxm_fields'. */
 static struct hmap all_oxm_fields = HMAP_INITIALIZER(&all_oxm_fields);
 
-static int OFDPA_parse_oxm_entry(struct ofl_match *match, const struct oxm_field *f, const void *experimenter, const void *exp_type, const void *value, const void *mask);
+static int OFDPA_parse_oxm_entry(struct ofl_match *match, const struct oxm_field *f, const void *experimenter, const void *value, const void *mask);
 
 static void
 oxm_init(void)
@@ -225,11 +225,6 @@ static uint8_t* get_oxm_value(struct ofl_match *m, uint32_t header){
 static int
 parse_oxm_entry(struct ofl_match *match, const struct oxm_field *f,
                 const void *value, const void *mask){
-
-    /* begin AR#exp */
-    uint16_t vender = OXM_VENDOR(f->header);
-    uint16_t field  = OXM_FIELD(f->header);
-    /* end AR#exp */
 
     switch (f->index) {
         case OFI_OXM_OF_IN_PORT: {
@@ -404,16 +399,13 @@ parse_oxm_entry(struct ofl_match *match, const struct oxm_field *f,
              return 0;
         }
         case OFI_OXM_OF_PBB_ISID:{
-            uint8_t* pbb_isid;
-            pbb_isid = value;                    
+            uint8_t *pbb_isid = (uint8_t*) value;
             ofl_structs_match_put_pbb_isid(match, f->header, pbb_isid);
             return 0;
         }
         case OFI_OXM_OF_PBB_ISID_W:{
-            uint8_t* pbb_isid;
-            uint8_t* pbb_isid_mask;
-            pbb_isid = value;
-            pbb_isid_mask = mask;
+            uint8_t* pbb_isid = (uint8_t*) value;
+            uint8_t* pbb_isid_mask = (uint8_t*) mask;
             ofl_structs_match_put_pbb_isidm(match, f->header, pbb_isid, (uint8_t*) &pbb_isid_mask);
             return 0;
         }
@@ -442,6 +434,7 @@ parse_oxm_entry(struct ofl_match *match, const struct oxm_field *f,
 		/* end AR#exp */
 #endif
         case N_OXM_FIELDS:
+        default:
             NOT_REACHED();
     }
     NOT_REACHED();
@@ -449,43 +442,85 @@ parse_oxm_entry(struct ofl_match *match, const struct oxm_field *f,
 
 /* For OFDPA2.0
  */
-static int OFDPA_parse_oxm_entry(struct ofl_match *match, const struct oxm_field *f, const void *experimenter, const void *exp_type, const void *value, const void *mask)
+static int OFDPA_parse_oxm_entry(struct ofl_match *match, const struct oxm_field *f, const void *experimenter, const void *value, const void *mask)
 {
     uint32_t exp_id = ntohl(*((uint32_t*) experimenter));
-    uint16_t tmp_exp_type = ntohs(*((uint16_t*) exp_type));
 
-    switch (f->header)
+    if(0x1018 /*OFDPA_EXPERIMENTER_ID*/ == exp_id)
     {
-        case OXM_OF_OFDPA_VALUE8:
+        switch (f->header)
         {
-            uint8_t *v = (uint8_t*) value;
-            OFDPA_ofl_structs_match_exp_put8(match, OXM_OF_OFDPA_VALUE8, exp_id, tmp_exp_type, *v);
-            return 0;
+            case OXM_OF_OFDPA_TRAFFIC_CLASS:
+            case OXM_OF_OFDPA_COLOR:
+            case OXM_OF_OFDPA_DEI:
+            case OXM_OF_OFDPA_QOS_INDEX:
+            case OXM_OF_OFDPA_MPLS_TTL:
+            case OXM_OF_OFDPA_MPLS_DATA_FIRST_NIBBLE:
+            case OXM_OF_OFDPA_MPLS_NEXT_LABEL_IS_GAL:
+            case OXM_OF_OFDPA_OAM_Y1731_MDL:
+            case OXM_OF_OFDPA_OAM_Y1731_OPCODE:
+            case OXM_OF_OFDPA_PROTECTION_INDEX:
+            case OXM_OF_OFDPA_ALLOW_VLAN_TRANSLATION:
+            {
+                uint8_t *v = (uint8_t*) value;
+                OFDPA_ofl_structs_match_exp_put8(match, f->header, exp_id, *v);
+                return 0;
+            }
+
+            case OXM_OF_OFDPA_VRF:
+            case OXM_OF_OFDPA_OVID:
+            case OXM_OF_OFDPA_MPLS_ACH_CHANNEL:
+            case OXM_OF_OFDPA_MPLS_TYPE:
+                OFDPA_ofl_structs_match_exp_put16(match, f->header, exp_id, ntohs(*((uint16_t*) value)));
+                return 0;
+
+            case OXM_OF_OFDPA_LMEP_ID:
+            case OXM_OF_OFDPA_MPLS_L2_PORT:
+            case OXM_OF_OFDPA_L3_IN_PORT:
+            case OXM_OF_OFDPA_COLOR_ACTIONS_INDEX:
+            case OXM_OF_OFDPA_ACTSET_OUTPUT:
+                OFDPA_ofl_structs_match_exp_put32(match, f->header, exp_id, ntohl(*((uint32_t*) value)));
+                return 0;
+
+            case OXM_OF_OFDPA_MPLS_L2_PORT_W:
+                OFDPA_ofl_structs_match_exp_put32m(match, f->header, exp_id, ntohl(*((uint32_t*) value)), ntohl(*((uint32_t*) mask)));
+                return 0;
+
+            case OXM_OF_OFDPA_TXFCL:
+            case OXM_OF_OFDPA_RXFCL:
+            case OXM_OF_OFDPA_RX_TIMESTAMP:
+                OFDPA_ofl_structs_match_exp_put64(match, f->header, exp_id, ntoh64(*((uint64_t*) value)));
+                return 0;
+
+            default:
+                NOT_REACHED();
         }
-
-        case OXM_OF_OFDPA_VALUE16:
-            OFDPA_ofl_structs_match_exp_put16(match, OXM_OF_OFDPA_VALUE16, exp_id, tmp_exp_type, ntohs(*((uint16_t*) value)));
-            return 0;
-
-        case OXM_OF_OFDPA_VALUE32:
-            OFDPA_ofl_structs_match_exp_put32(match, OXM_OF_OFDPA_VALUE32, exp_id, tmp_exp_type, ntohl(*((uint32_t*) value)));
-            return 0;
-
-        case OXM_OF_OFDPA_VALUE32_W:
-            if( (OFDPA_OFPXMT_OFB_MPLS_L2_PORT == tmp_exp_type) || (ACCTON_OFPXMT_OFB_UDF_DATA == tmp_exp_type) )
-            {
-                OFDPA_ofl_structs_match_exp_put32m(match, OXM_OF_OFDPA_VALUE32_W, exp_id, tmp_exp_type, ntohl(*((uint32_t*) value)), ntohl(*((uint32_t*) mask)));
-            }
-            else
-            {
-                OFDPA_ofl_structs_match_exp_put64(match, OXM_OF_OFDPA_VALUE64, exp_id, tmp_exp_type, *((uint64_t*) value));
-            }
-            return 0;
-
-        case OXM_OF_OFDPA_VALUE64:
-            OFDPA_ofl_structs_match_exp_put64(match, OXM_OF_OFDPA_VALUE64, exp_id, tmp_exp_type, ntoh64(*((uint64_t*) value)));
-            return 0;
     }
+    else  /* accton */
+    {
+        switch (f->header)
+        {
+            case OXM_OF_ACCTON_INPORTS:
+                OFDPA_ofl_structs_match_exp_put64(match, f->header, exp_id, ntoh64(*((uint64_t*) value)));
+                return 0;
+
+            case OXM_OF_ACCTON_UDF_OFFSET:
+                OFDPA_ofl_structs_match_exp_put16(match, f->header, exp_id, ntohs(*((uint16_t*) value)));
+                return 0;
+
+            case OXM_OF_ACCTON_UDF_DATA:
+                OFDPA_ofl_structs_match_exp_put32(match, f->header, exp_id, ntohl(*((uint32_t*) value)));
+                return 0;
+
+            case OXM_OF_ACCTON_UDF_DATA_W:
+                OFDPA_ofl_structs_match_exp_put32m(match, f->header, exp_id, ntohl(*((uint32_t*) value)), ntohl(*((uint32_t*) mask)));
+                return 0;
+
+            default:
+                NOT_REACHED();
+        }
+    }
+
     NOT_REACHED();
 }
  /*hmap_insert(match_dst, &f->hmap_node,
@@ -503,12 +538,12 @@ oxm_pull_match(struct ofpbuf *buf, struct ofl_match * match_dst, int match_len)
     uint8_t *p;
     p = ofpbuf_try_pull(buf, match_len);
     VLOG_DBG(LOG_MODULE, "oxm_match length %u, max "
-                    "length %d", match_len, buf->size);
+                    "length %zu", match_len, buf->size);
 
     if (!p) {
         VLOG_DBG_RL(LOG_MODULE,&rl, "oxm_match length %u, rounded up to a "
                     "multiple of 8, is longer than space in message (max "
-                    "length %d)", match_len, buf->size);
+                    "length %zu)", match_len, buf->size);
 
         return ofp_mkerr(OFPET_BAD_MATCH, OFPBRC_BAD_LEN);
     }
@@ -535,7 +570,7 @@ oxm_pull_match(struct ofpbuf *buf, struct ofl_match * match_dst, int match_len)
         else {
             if(0xFFFF == OXM_VENDOR(f->header))
             {
-                error = OFDPA_parse_oxm_entry(match_dst, f, p+4/*experimenter*/, p+8/*exp_type*/, p+10/*data*/, p+10+(length-6)/2);
+                error = OFDPA_parse_oxm_entry(match_dst, f, p+4/*experimenter*/, p+8/*data*/, p+8+(length-6)/2);
             }
             else
             {
@@ -842,15 +877,11 @@ int oxm_put_match(struct ofpbuf *buf, struct ofl_match *omt){
             struct OFDPA_ofl_match_exp_tlv* expf = (struct OFDPA_ofl_match_exp_tlv*)oft;
 
             uint8_t length = OXM_LENGTH(expf->header);
-            uint8_t field = OXM_FIELD(expf->header);
             uint32_t experimenter_v;
-            uint16_t exp_type_v;
             bool has_mask = false;
 
             experimenter_v = htonl(expf->experimenter);
-            exp_type_v = htons(expf->exp_type);
             length -= sizeof(expf->experimenter);
-            length -= sizeof(expf->exp_type);
 
             if (OXM_HASMASK(expf->header))
             {
@@ -860,7 +891,6 @@ int oxm_put_match(struct ofpbuf *buf, struct ofl_match *omt){
 
             oxm_put_header(buf, expf->header);
             ofpbuf_put(buf, &experimenter_v, sizeof experimenter_v);
-            ofpbuf_put(buf, &exp_type_v, sizeof exp_type_v);
 
             switch(length)
             {

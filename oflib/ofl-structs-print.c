@@ -504,10 +504,10 @@ print_oxm_tlv(FILE *stream, struct ofl_match_tlv *f, size_t *size){
             fprintf(stream, ", ");
     }
     else if (field == OFPXMT_OFB_METADATA){
-        fprintf(stream, "\"metadata\":%lld", *((uint64_t*) f->value));
+        fprintf(stream, "\"metadata\":\"0x%"PRIx64"\"", *((uint64_t*) f->value));
         *size -= 12;
         if (OXM_HASMASK(f->header)){
-            fprintf(stream, ", \"metadata_mask\":%lld", *((uint64_t*) f->value+ 8 ));
+            fprintf(stream, ", \"metadata_mask\":\"0x%"PRIx64"\"", *((uint64_t*) f->value+ 8 ));
             *size -= 8;
         }
         if (*size > 4)
@@ -524,10 +524,10 @@ print_oxm_tlv(FILE *stream, struct ofl_match_tlv *f, size_t *size){
             fprintf(stream, ", ");
     }
     else if (field == OFPXMT_OFB_TUNNEL_ID){
-        fprintf(stream, "\"tunnel_id\":\"0x%llX\"", (*((uint64_t*) f->value)));
+        fprintf(stream, "\"tunnel_id\":\"0x%"PRIx64"\"", (*((uint64_t*) f->value)));
         *size -= 12;
         if (OXM_HASMASK(f->header)){
-            fprintf(stream, ", \"tunnel_id_mask\":\"0x%llX\"", *((uint64_t*) f->value+ 8 ));
+            fprintf(stream, ", \"tunnel_id_mask\":\"0x%"PRIx64"\"", *((uint64_t*) f->value+ 8 ));
             *size -= 8;
         }
         if (*size > 4)
@@ -586,7 +586,7 @@ ATN_print_oxm_exp_tlv(FILE *stream, struct ATN_ofl_match_exp_tlv *f, size_t *siz
 static void OFDPA_print_oxm_exp_tlv(FILE *stream, struct OFDPA_ofl_match_exp_tlv *f, size_t *size)
 {
     uint32_t experimenter = f->experimenter;
-    uint16_t field = f->exp_type;
+    uint8_t field = OXM_FIELD(f->header);
 
     if(OPENFLOW_ACCTON_ID == experimenter)
     {
@@ -597,42 +597,42 @@ static void OFDPA_print_oxm_exp_tlv(FILE *stream, struct OFDPA_ofl_match_exp_tlv
     if (field == OFDPA_OFPXMT_OFB_VRF)
     {
         fprintf(stream, "\"ofdpa_vrf\":%d", *((uint16_t*) f->exp_data_p));
-        *size -= (10+2);
+        *size -= (8+2);
     }
     else if (field == OFDPA_OFPXMT_OFB_TRAFFIC_CLASS)
     {
         fprintf(stream, "\"ofdpa_tc\":%d", *f->exp_data_p);
-        *size -= (10+1);
+        *size -= (8+1);
     }
     else if (field == OFDPA_OFPXMT_OFB_COLOR)
     {
         fprintf(stream, "\"ofdpa_color\":%d", *f->exp_data_p);
-        *size -= (10+1);
+        *size -= (8+1);
     }
     else if (field == OFDPA_OFPXMT_OFB_DEI)
     {
         fprintf(stream, "\"ofdpa_dei\":%d", *f->exp_data_p);
-        *size -= (10+1);
+        *size -= (8+1);
     }
     else if (field == OFDPA_OFPXMT_OFB_QOS_INDEX)
     {
         fprintf(stream, "\"ofdpa_qos_index\":%d", *f->exp_data_p);
-        *size -= (10+1);
+        *size -= (8+1);
     }
     else if (field == OFDPA_OFPXMT_OFB_LMEP_ID)
     {
         fprintf(stream, "\"ofdpa_lmep_id\":%d", *((uint32_t*) f->exp_data_p));
-        *size -= (10+4);
+        *size -= (8+4);
     }
     else if (field == OFDPA_OFPXMT_OFB_MPLS_TTL)
     {
         fprintf(stream, "\"ofdpa_mpls_ttl\":%d", *f->exp_data_p);
-        *size -= (10+1);
+        *size -= (8+1);
     }
     else if (field == OFDPA_OFPXMT_OFB_MPLS_L2_PORT)
     {
         fprintf(stream, "\"ofdpa_mpls_l2_port\":%d", *((uint32_t*) f->exp_data_p));
-        *size -= (10+4);
+        *size -= (8+4);
 
         if (OXM_HASMASK(f->header))
         {
@@ -641,65 +641,80 @@ static void OFDPA_print_oxm_exp_tlv(FILE *stream, struct OFDPA_ofl_match_exp_tlv
             fprintf(stream, "/%d", *((uint32_t*)ofdpa_mpls_l2_port_mask));
         }
     }
+    else if (field == OFDPA_OFPXMT_OFB_L3_IN_PORT)
+    {
+        fprintf(stream, "\"ofdpa_l3_in_port\":%d", *((uint32_t*) f->exp_data_p));
+        *size -= (8+4);
+    }
     else if (field == OFDPA_OFPXMT_OFB_OVID)
     {
         fprintf(stream, "\"ofdpa_ovid\":%d", *((uint16_t*) f->exp_data_p));
-        *size -= (10+2);
+        *size -= (8+2);
     }
     else if (field == OFDPA_OFPXMT_OFB_MPLS_DATA_FIRST_NIBBLE)
     {
         fprintf(stream, "\"ofdpa_mpls_data_first_nibble\":%d", *f->exp_data_p);
-        *size -= (10+1);
+        *size -= (8+1);
     }
     else if (field == OFDPA_OFPXMT_OFB_MPLS_ACH_CHANNEL)
     {
         fprintf(stream, "\"ofdpa_mpls_ach_channel\":%d", *((uint16_t*) f->exp_data_p));
-        *size -= (10+2);
+        *size -= (8+2);
     }
     else if (field == OFDPA_OFPXMT_OFB_MPLS_NEXT_LABEL_IS_GAL)
     {
         fprintf(stream, "\"ofdpa_mpls_next_label_is_gal\":%d", *f->exp_data_p);
-        *size -= (10+1);
+        *size -= (8+1);
     }
     else if (field == OFDPA_OFPXMT_OFB_OAM_Y1731_MDL)
     {
         fprintf(stream, "\"ofdpa_oam_y1731_mdl\":%d", *f->exp_data_p);
-        *size -= (10+1);
+        *size -= (8+1);
     }
     else if (field == OFDPA_OFPXMT_OFB_OAM_Y1731_OPCODE)
     {
         fprintf(stream, "\"ofdpa_oam_y1731_opcode\":%d", *f->exp_data_p);
-        *size -= (10+1);
+        *size -= (8+1);
     }
     else if (field == OFDPA_OFPXMT_OFB_COLOR_ACTIONS_INDEX)
     {
         fprintf(stream, "\"ofdpa_color_actions_index\":%d", *((uint32_t*) f->exp_data_p));
-        *size -= (10+4);
+        *size -= (8+4);
     }
     else if (field == OFDPA_OFPXMT_OFB_TXFCL)
     {
-        fprintf(stream, "\"ofdpa_txfcl\":0x%llX", *((uint64_t*) f->exp_data_p));
-        *size -= (10+8);
+        fprintf(stream, "\"ofdpa_txfcl\":\"0x%"PRIx64"\"", *((uint64_t*) f->exp_data_p));
+        *size -= (8+8);
     }
     else if (field == OFDPA_OFPXMT_OFB_RXFCL)
     {
-        fprintf(stream, "\"ofdpa_rxfcl\":0x%llX", *((uint64_t*) f->exp_data_p));
-        *size -= (10+8);
+        fprintf(stream, "\"ofdpa_rxfcl\":\"0x%"PRIx64"\"", *((uint64_t*) f->exp_data_p));
+        *size -= (8+8);
     }
     else if (field == OFDPA_OFPXMT_OFB_RX_TIMESTAMP)
     {
-        fprintf(stream, "\"ofdpa_rx_timestamp\":\"0x%llX\"", *((uint64_t*) f->exp_data_p));
-        *size -= (10+8);
+        fprintf(stream, "\"ofdpa_rx_timestamp\":\"0x%"PRIx64"\"", *((uint64_t*) f->exp_data_p));
+        *size -= (8+8);
     }
     else if (field == OFDPA_OFPXMT_OFB_PROTECTION_INDEX)
     {
         fprintf(stream, "\"ofdpa_protection_index\":%d", *f->exp_data_p);
-        *size -= (10+1);
+        *size -= (8+1);
+    }
+    else if (field == OFDPA_OFPXMT_OFB_MPLS_TYPE)
+    {
+        fprintf(stream, "\"ofdpa_mpls_type\":%d", *((uint16_t*) f->exp_data_p));
+        *size -= (8+2);
+    }
+    else if (field == OFDPA_OFPXMT_OFB_ALLOW_VLAN_TRANSLATION)
+    {
+        fprintf(stream, "\"ofdpa_allow_vlan_xlate\":%d", *f->exp_data_p);
+        *size -= (8+1);
     }
     else if (field == OFDPA_OFPXMT_OFB_ACTSET_OUTPUT)
     {
         fprintf(stream, "\"ofdpa_actset_output\":%d", *((uint32_t*) f->exp_data_p));
-        *size -= (10+4);
+        *size -= (8+4);
     }
 
     if (*size > 4)
@@ -710,22 +725,22 @@ static void OFDPA_print_oxm_exp_tlv(FILE *stream, struct OFDPA_ofl_match_exp_tlv
 
 static void OFDPA_print_oxm_accton_exp_tlv(FILE *stream, struct OFDPA_ofl_match_exp_tlv *f, size_t *size)
 {
-    uint16_t field = f->exp_type;
+    uint8_t field = OXM_FIELD(f->header);
 
     if (field == ACCTON_OFPXMT_OFB_INPORTS)
     {
-        fprintf(stream, "\"accton_in_ports\":\"0x%llX\"", *((uint64_t*) f->exp_data_p));
-        *size -= (10+8);
+        fprintf(stream, "\"accton_in_ports\":\"0x%"PRIx64"\"", *((uint64_t*) f->exp_data_p));
+        *size -= (8+8);
     }
     else if (field == ACCTON_OFPXMT_OFB_UDF_OFFSET)
     {
         fprintf(stream, "\"accton_udf_offset\":%d", *((uint16_t*) f->exp_data_p));
-        *size -= (10+2);
+        *size -= (8+2);
     }
     else if (field == ACCTON_OFPXMT_OFB_UDF_DATA)
     {
         fprintf(stream, "\"accton_udf_data\":\"0x%X", *((uint32_t*) f->exp_data_p));
-        *size -= (10+4);
+        *size -= (8+4);
 
         if (OXM_HASMASK(f->header))
         {
@@ -1054,7 +1069,7 @@ void
 ofl_structs_meter_stats_print(FILE *stream, struct ofl_meter_stats* s){
     size_t i;
 
-    fprintf(stream, "{\"meter\": %lu", s->meter_id);
+    fprintf(stream, "{\"meter\": %"PRIu32"", s->meter_id);
     fprintf(stream, ", \"flow_cnt\":%u, \"pkt_in_cnt\":\"0x%"PRIx64"\", \"byte_in_cnt\":\"0x%"PRIx64"\""
                     ", \"duration_sec\":%"PRIu32", \"duration_nsec\":%"PRIu32", \"bands\":[",
                   s->flow_count, s->packet_in_count, s->byte_in_count,
@@ -1082,7 +1097,7 @@ void
 ofl_structs_meter_config_print(FILE *stream, struct ofl_meter_config* s){
     size_t i;
 
-    fprintf(stream, "{\"meter\": %lu", s->meter_id);
+    fprintf(stream, "{\"meter\": %"PRIu32"", s->meter_id);
     fprintf(stream, ", \"flags\":\"0x%"PRIx16"\", \"bands\":[",
                   s->flags);
 

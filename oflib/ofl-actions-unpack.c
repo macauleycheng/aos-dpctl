@@ -288,10 +288,9 @@ ofl_actions_unpack(struct ofp_action_header *src, size_t *len, struct ofl_action
             {
                 struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv)+OXM_LENGTH(tmp_header));
                 uint32_t experimenter_v = 0;
-                uint16_t exp_type_v = 0;
                 uint8_t length = OXM_LENGTH(tmp_header);
+                uint8_t data_len = (length - sizeof(experimenter_v));
                 uint8_t get_offset_len = sizeof(struct ofp_action_set_field);
-                uint8_t set_offset_len = 0;
 
                 ofdpa_exp_tlv_p->header = tmp_header;
 
@@ -300,17 +299,9 @@ ofl_actions_unpack(struct ofp_action_header *src, size_t *len, struct ofl_action
                 ofdpa_exp_tlv_p->experimenter = experimenter_v;
                 get_offset_len += 4;
 
-                memcpy(&exp_type_v, (uint8_t *) src + get_offset_len, 2);
-                exp_type_v = ntohs(exp_type_v);
-                ofdpa_exp_tlv_p->exp_type = exp_type_v;
-                get_offset_len += 2;
-
-                set_offset_len = 6 /* exp + type */;
-                length -= 6;
-
-                switch(length)
+                switch(data_len)
                 {
-                    case (sizeof(uint8_t)):
+                    case 1:
                     {
                         uint8_t *u8_v_p = xmalloc(sizeof(uint8_t));
 
@@ -319,7 +310,7 @@ ofl_actions_unpack(struct ofp_action_header *src, size_t *len, struct ofl_action
                         break;
                     }
 
-                    case (sizeof(uint16_t)):
+                    case 2:
                     {
                         uint16_t *u16_v_p = xmalloc(sizeof(uint16_t));
 
@@ -329,7 +320,7 @@ ofl_actions_unpack(struct ofp_action_header *src, size_t *len, struct ofl_action
                         break;
                     }
 
-                    case (sizeof(uint32_t)):
+                    case 4:
                     {
                         uint32_t *u32_v_p = xmalloc(sizeof(uint32_t));
 
@@ -339,7 +330,7 @@ ofl_actions_unpack(struct ofp_action_header *src, size_t *len, struct ofl_action
                         break;
                     }
 
-                    case (sizeof(uint64_t)):
+                    case 8:
                     {
                         uint64_t *u64_v_p = xmalloc(sizeof(uint64_t));
 

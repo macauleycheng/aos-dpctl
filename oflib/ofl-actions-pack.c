@@ -215,39 +215,34 @@ ofl_actions_pack(struct ofl_action_header *src, struct ofp_action_header *dst, u
             {
                 struct OFDPA_ofl_match_exp_tlv* ofdpa_exp_tlv_p = (struct OFDPA_ofl_match_exp_tlv*)sa->field;
                 uint32_t experimenter_v = htonl(ofdpa_exp_tlv_p->experimenter);
-                uint16_t exp_type_v = htons(ofdpa_exp_tlv_p->exp_type);
                 uint8_t length = OXM_LENGTH(sa->field->header);
                 uint8_t offset_len = sizeof(struct ofp_action_set_field);
-
-                length -= sizeof(experimenter_v);
-                length -= sizeof(exp_type_v);
+                uint8_t data_len = (length - sizeof(experimenter_v));
 
                 memcpy(data + offset_len, &experimenter_v, sizeof(experimenter_v));
                 offset_len += sizeof(experimenter_v);
-                memcpy(data + offset_len, &exp_type_v, sizeof(exp_type_v));
-                offset_len += sizeof(exp_type_v);
 
-                switch(length)
+                switch(data_len)
                 {
-                    case (sizeof(uint8_t)):
+                    case 1:
                         memcpy(data + offset_len, ofdpa_exp_tlv_p->exp_data_p, sizeof(uint8_t));
                         break;
 
-                    case (sizeof(uint16_t)):
+                    case 2:
                     {
                         uint16_t value = htons(*((uint16_t*) ofdpa_exp_tlv_p->exp_data_p));
                         memcpy(data + offset_len, &value, sizeof(value));
                         break;
                     }
 
-                    case (sizeof(uint32_t)):
+                    case 4:
                     {
                         uint32_t value = htonl(*((uint32_t*) ofdpa_exp_tlv_p->exp_data_p));
                         memcpy(data + offset_len, &value, sizeof(value));
                         break;
                     }
 
-                    case (sizeof(uint64_t)):
+                    case 8:
                     {
                         uint64_t value = hton64(*((uint64_t*) ofdpa_exp_tlv_p->exp_data_p));
                         memcpy(data + offset_len, &value, sizeof(value));

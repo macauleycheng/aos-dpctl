@@ -166,7 +166,7 @@ struct ofl_flow_stats {
     uint16_t                        idle_timeout;  /* Number of seconds idle before
                                                      expiration. */
     uint16_t                        hard_timeout;  /* Number of seconds before expiration. */
-    uint16_t                        flags;         /* One of OFPFF_*/ 
+    uint16_t                        flags;         /* One of OFPFF_*/
     uint64_t                        cookie;        /* Opaque controller-issued identifier. */
     uint64_t                        packet_count;  /* Number of packets in flow. */
     uint64_t                        byte_count;    /* Number of bytes in flow. */
@@ -279,7 +279,6 @@ struct OFDPA_ofl_match_exp_tlv
     struct hmap_node hmap_node;
     uint32_t header;    /* TLV header */
     uint32_t experimenter;
-    uint16_t exp_type;
     uint8_t *exp_data_p;
 };
 /* End of OFDPA2.0
@@ -543,11 +542,11 @@ ATN_ofl_structs_match_exp_put16(struct ofl_match *match, uint32_t header, uint32
 
 /* For OFDPA2.0
  */
-void OFDPA_ofl_structs_match_exp_put8(struct ofl_match *match, uint32_t header, uint32_t experimenter, uint16_t exp_type, uint8_t value);
-void OFDPA_ofl_structs_match_exp_put16(struct ofl_match *match, uint32_t header, uint32_t experimenter, uint16_t exp_type, uint16_t value);
-void OFDPA_ofl_structs_match_exp_put32(struct ofl_match *match, uint32_t header, uint32_t experimenter, uint16_t exp_type, uint32_t value);
-void OFDPA_ofl_structs_match_exp_put32m(struct ofl_match *match, uint32_t header, uint32_t experimenter, uint16_t exp_type, uint32_t value, uint32_t mask);
-void OFDPA_ofl_structs_match_exp_put64(struct ofl_match *match, uint32_t header, uint32_t experimenter, uint16_t exp_type, uint64_t value);
+void OFDPA_ofl_structs_match_exp_put8(struct ofl_match *match, uint32_t header, uint32_t experimenter, uint8_t value);
+void OFDPA_ofl_structs_match_exp_put16(struct ofl_match *match, uint32_t header, uint32_t experimenter, uint16_t value);
+void OFDPA_ofl_structs_match_exp_put32(struct ofl_match *match, uint32_t header, uint32_t experimenter, uint32_t value);
+void OFDPA_ofl_structs_match_exp_put32m(struct ofl_match *match, uint32_t header, uint32_t experimenter, uint32_t value, uint32_t mask);
+void OFDPA_ofl_structs_match_exp_put64(struct ofl_match *match, uint32_t header, uint32_t experimenter, uint64_t value);
 /* End of OFDPA2.0
  */
 

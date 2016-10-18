@@ -291,7 +291,7 @@ ofl_oxm_type_print(FILE *stream, uint32_t type){
     case OXM_OF_OFDPA_RX_TIMESTAMP:     {fprintf(stream, "\"ofdpa_rx_timestamp\""); return; }
     case OXM_OF_OFDPA_PROTECTION_INDEX:  {fprintf(stream, "\"ofdpa_protection_index\""); return; }
     case OXM_OF_OFDPA_ACTSET_OUTPUT:    {fprintf(stream, "\"ofdpa_actset_output\""); return; }
-/* End of OFDPA2.0
+ End of OFDPA2.0
  */
 
     default: {                       fprintf(stream, "\"?(%d)\"", type); return; }

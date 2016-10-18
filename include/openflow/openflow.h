@@ -388,6 +388,7 @@ enum ofdpa_match_exp_type
     OFDPA_OFPXMT_OFB_LMEP_ID = 6,
     OFDPA_OFPXMT_OFB_MPLS_TTL = 7,
     OFDPA_OFPXMT_OFB_MPLS_L2_PORT = 8,
+    OFDPA_OFPXMT_OFB_L3_IN_PORT = 9,
     OFDPA_OFPXMT_OFB_OVID = 10,
     OFDPA_OFPXMT_OFB_MPLS_DATA_FIRST_NIBBLE = 11,
     OFDPA_OFPXMT_OFB_MPLS_ACH_CHANNEL = 12,
@@ -399,7 +400,9 @@ enum ofdpa_match_exp_type
     OFDPA_OFPXMT_OFB_RXFCL = 18,
     OFDPA_OFPXMT_OFB_RX_TIMESTAMP = 19,
     OFDPA_OFPXMT_OFB_PROTECTION_INDEX = 20,
-    OFDPA_OFPXMT_OFB_ACTSET_OUTPUT = 42,
+    OFDPA_OFPXMT_OFB_MPLS_TYPE = 23,
+    OFDPA_OFPXMT_OFB_ALLOW_VLAN_TRANSLATION = 24,
+    OFDPA_OFPXMT_OFB_ACTSET_OUTPUT = 43,
 };
 /* End of OFDPA2.0
  */
@@ -1167,7 +1170,7 @@ struct ofp_flow_stats {
 	uint16_t priority;      /* Priority of the entry. */
 	uint16_t idle_timeout;  /* Number of seconds idle before expiration. */
 	uint16_t hard_timeout;  /* Number of seconds before expiration. */
-	uint16_t flags;         /* One of OFPFF_*/ 
+	uint16_t flags;         /* One of OFPFF_*/
         uint8_t pad2[4];        /* Align to 64-bits. */
 	uint64_t cookie;        /* Opaque controller-issued identifier. */
 	uint64_t packet_count;  /* Number of packets in flow. */

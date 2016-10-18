@@ -300,6 +300,7 @@ static struct names32 role_names[] = {
 #define MATCH_OFDPA_LMEP_ID "ofdpa_lmep_id"
 #define MATCH_OFDPA_MPLS_TTL "ofdpa_mpls_ttl"
 #define MATCH_OFDPA_MPLS_L2_PORT "ofdpa_mpls_l2_port"
+#define MATCH_OFDPA_L3_IN_PORT "ofdpa_l3_in_port"
 #define MATCH_OFDPA_OVID "ofdpa_ovid"
 #define MATCH_OFDPA_MPLS_DATA_FIRST_NIBBLE "ofdpa_mpls_data_first_nibble"
 #define MATCH_OFDPA_MPLS_ACH_CHANNEL "ofdpa_mpls_ach_channel"
@@ -311,6 +312,8 @@ static struct names32 role_names[] = {
 #define MATCH_OFDPA_RXFCL "ofdpa_rxfcl"
 #define MATCH_OFDPA_RX_TIMESTAMP "ofdpa_rx_timestamp"
 #define MATCH_OFDPA_PROTECTION_INDEX "ofdpa_protection_index"  /* not used */
+#define MATCH_OFDPA_MPLS_TYPE "ofdpa_mpls_type"
+#define MATCH_OFDPA_ALLOW_VLAN_TRANSLATION "ofdpa_allow_vlan_xlate"
 #define MATCH_OFDPA_ACTSET_OUTPUT "ofdpa_actset_output"
 
 #define OFDPA_EXPERIMENTER_ID 0x1018

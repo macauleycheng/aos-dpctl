@@ -267,56 +267,52 @@ ATN_ofl_structs_match_exp_put16(struct ofl_match *match, uint32_t header, uint32
 
 /* For OFDPA2.0
  */
-void OFDPA_ofl_structs_match_exp_put8(struct ofl_match *match, uint32_t header, uint32_t experimenter, uint16_t exp_type, uint8_t value)
+void OFDPA_ofl_structs_match_exp_put8(struct ofl_match *match, uint32_t header, uint32_t experimenter, uint8_t value)
 {
     struct OFDPA_ofl_match_exp_tlv *m = malloc(sizeof (struct OFDPA_ofl_match_exp_tlv));
     int len = sizeof(uint8_t);
 
     m->header = header;
     m->experimenter = experimenter;
-    m->exp_type = exp_type;
     m->exp_data_p = malloc(len);
     memcpy(m->exp_data_p, &value, len);
     hmap_insert(&match->match_fields, &m->hmap_node, hash_int(header, 0));
     match->header.length += len + 10;
 }
 
-void OFDPA_ofl_structs_match_exp_put16(struct ofl_match *match, uint32_t header, uint32_t experimenter, uint16_t exp_type, uint16_t value)
+void OFDPA_ofl_structs_match_exp_put16(struct ofl_match *match, uint32_t header, uint32_t experimenter, uint16_t value)
 {
     struct OFDPA_ofl_match_exp_tlv *m = malloc(sizeof (struct OFDPA_ofl_match_exp_tlv));
     int len = sizeof(uint16_t);
 
     m->header = header;
     m->experimenter = experimenter;
-    m->exp_type = exp_type;
     m->exp_data_p = malloc(len);
     memcpy(m->exp_data_p, &value, len);
     hmap_insert(&match->match_fields, &m->hmap_node, hash_int(header, 0));
     match->header.length += len + 10;
 }
 
-void OFDPA_ofl_structs_match_exp_put32(struct ofl_match *match, uint32_t header, uint32_t experimenter, uint16_t exp_type, uint32_t value)
+void OFDPA_ofl_structs_match_exp_put32(struct ofl_match *match, uint32_t header, uint32_t experimenter, uint32_t value)
 {
     struct OFDPA_ofl_match_exp_tlv *m = malloc(sizeof (struct OFDPA_ofl_match_exp_tlv));
     int len = sizeof(uint32_t);
 
     m->header = header;
     m->experimenter = experimenter;
-    m->exp_type = exp_type;
     m->exp_data_p = malloc(len);
     memcpy(m->exp_data_p, &value, len);
     hmap_insert(&match->match_fields, &m->hmap_node, hash_int(header, 0));
     match->header.length += len + 10;
 }
 
-void OFDPA_ofl_structs_match_exp_put32m(struct ofl_match *match, uint32_t header, uint32_t experimenter, uint16_t exp_type, uint32_t value, uint32_t mask)
+void OFDPA_ofl_structs_match_exp_put32m(struct ofl_match *match, uint32_t header, uint32_t experimenter, uint32_t value, uint32_t mask)
 {
     struct OFDPA_ofl_match_exp_tlv *m = malloc(sizeof (struct OFDPA_ofl_match_exp_tlv));
     int len = sizeof(uint32_t);
 
     m->header = header;
     m->experimenter = experimenter;
-    m->exp_type = exp_type;
     m->exp_data_p = malloc(len*2);
     memcpy(m->exp_data_p, &value, len);
     memcpy(m->exp_data_p+len, &mask, len);
@@ -324,14 +320,13 @@ void OFDPA_ofl_structs_match_exp_put32m(struct ofl_match *match, uint32_t header
     match->header.length += len*2 + 10;
 }
 
-void OFDPA_ofl_structs_match_exp_put64(struct ofl_match *match, uint32_t header, uint32_t experimenter, uint16_t exp_type, uint64_t value)
+void OFDPA_ofl_structs_match_exp_put64(struct ofl_match *match, uint32_t header, uint32_t experimenter, uint64_t value)
 {
     struct OFDPA_ofl_match_exp_tlv *m = malloc(sizeof (struct OFDPA_ofl_match_exp_tlv));
     int len = sizeof(uint64_t);
 
     m->header = header;
     m->experimenter = experimenter;
-    m->exp_type = exp_type;
     m->exp_data_p = malloc(len);
     memcpy(m->exp_data_p, &value, len);
     hmap_insert(&match->match_fields, &m->hmap_node, hash_int(header, 0));

@@ -1784,7 +1784,7 @@ parse_match(char *str, struct ofl_match_header **match) {
         /* Metadata */
         if (strncmp(token, MATCH_METADATA KEY_VAL, strlen(MATCH_METADATA KEY_VAL)) == 0) {
             char *saveptr = NULL;
-    	    char *token2;
+    	      char *token2;
             bool is_mask;
             uint64_t metadata,meta_mask;
             if (sscanf(token, MATCH_METADATA KEY_VAL "0x%"SCNx64"", (&metadata)) != 1) {
@@ -1910,7 +1910,7 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put16(m, OXM_OF_OFDPA_VRF, OFDPA_EXPERIMENTER_ID, OFDPA_OFPXMT_OFB_VRF, ofdpa_vrf);
+                OFDPA_ofl_structs_match_exp_put16(m, OXM_OF_OFDPA_VRF, OFDPA_EXPERIMENTER_ID, ofdpa_vrf);
             }
             continue;
         }
@@ -1925,7 +1925,7 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put8(m, OXM_OF_OFDPA_TRAFFIC_CLASS, OFDPA_EXPERIMENTER_ID, OFDPA_OFPXMT_OFB_TRAFFIC_CLASS, ofdpa_tc);
+                OFDPA_ofl_structs_match_exp_put8(m, OXM_OF_OFDPA_TRAFFIC_CLASS, OFDPA_EXPERIMENTER_ID, ofdpa_tc);
             }
             continue;
         }
@@ -1940,7 +1940,7 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put8(m, OXM_OF_OFDPA_COLOR, OFDPA_EXPERIMENTER_ID, OFDPA_OFPXMT_OFB_COLOR, ofdpa_color);
+                OFDPA_ofl_structs_match_exp_put8(m, OXM_OF_OFDPA_COLOR, OFDPA_EXPERIMENTER_ID, ofdpa_color);
             }
             continue;
         }
@@ -1955,7 +1955,7 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put8(m, OXM_OF_OFDPA_DEI, OFDPA_EXPERIMENTER_ID, OFDPA_OFPXMT_OFB_DEI, ofdpa_dei);
+                OFDPA_ofl_structs_match_exp_put8(m, OXM_OF_OFDPA_DEI, OFDPA_EXPERIMENTER_ID, ofdpa_dei);
             }
             continue;
         }
@@ -1970,7 +1970,7 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put8(m, OXM_OF_OFDPA_QOS_INDEX, OFDPA_EXPERIMENTER_ID, OFDPA_OFPXMT_OFB_QOS_INDEX, ofdpa_qos_index);
+                OFDPA_ofl_structs_match_exp_put8(m, OXM_OF_OFDPA_QOS_INDEX, OFDPA_EXPERIMENTER_ID, ofdpa_qos_index);
             }
             continue;
         }
@@ -1985,7 +1985,7 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put32(m, OXM_OF_OFDPA_LMEP_ID, OFDPA_EXPERIMENTER_ID, OFDPA_OFPXMT_OFB_LMEP_ID, ofdpa_lmep_id);
+                OFDPA_ofl_structs_match_exp_put32(m, OXM_OF_OFDPA_LMEP_ID, OFDPA_EXPERIMENTER_ID, ofdpa_lmep_id);
             }
             continue;
         }
@@ -2003,12 +2003,27 @@ parse_match(char *str, struct ofl_match_header **match) {
             {
                 if (mask == NULL)
                 {
-                    OFDPA_ofl_structs_match_exp_put32(m, OXM_OF_OFDPA_MPLS_L2_PORT, OFDPA_EXPERIMENTER_ID, OFDPA_OFPXMT_OFB_MPLS_L2_PORT, ofdpa_mpls_l2_port);
+                    OFDPA_ofl_structs_match_exp_put32(m, OXM_OF_OFDPA_MPLS_L2_PORT, OFDPA_EXPERIMENTER_ID, ofdpa_mpls_l2_port);
                 }
                 else
                 {
-                    OFDPA_ofl_structs_match_exp_put32m(m, OXM_OF_OFDPA_MPLS_L2_PORT_W, OFDPA_EXPERIMENTER_ID, OFDPA_OFPXMT_OFB_MPLS_L2_PORT, ofdpa_mpls_l2_port, *mask);
+                    OFDPA_ofl_structs_match_exp_put32m(m, OXM_OF_OFDPA_MPLS_L2_PORT_W, OFDPA_EXPERIMENTER_ID, ofdpa_mpls_l2_port, *mask);
                 }
+            }
+            continue;
+        }
+
+        if (strncmp(token, MATCH_OFDPA_L3_IN_PORT KEY_VAL, strlen(MATCH_OFDPA_L3_IN_PORT KEY_VAL)) == 0)
+        {
+            uint32_t ofdpa_l3_in_port;
+
+            if (parse32(token + strlen(MATCH_OFDPA_L3_IN_PORT KEY_VAL), NULL, 0, 0xffffffff, &ofdpa_l3_in_port))
+            {
+                ofp_fatal(0, "Error parsing ofdpa_l3_in_port: %s.", token);
+            }
+            else
+            {
+                OFDPA_ofl_structs_match_exp_put32(m, OXM_OF_OFDPA_L3_IN_PORT, OFDPA_EXPERIMENTER_ID, ofdpa_l3_in_port);
             }
             continue;
         }
@@ -2023,7 +2038,7 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put16(m, OXM_OF_OFDPA_OVID, OFDPA_EXPERIMENTER_ID, OFDPA_OFPXMT_OFB_OVID, ofdpa_ovid);
+                OFDPA_ofl_structs_match_exp_put16(m, OXM_OF_OFDPA_OVID, OFDPA_EXPERIMENTER_ID, ofdpa_ovid);
             }
             continue;
         }
@@ -2038,7 +2053,7 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put8(m, OXM_OF_OFDPA_MPLS_DATA_FIRST_NIBBLE, OFDPA_EXPERIMENTER_ID, OFDPA_OFPXMT_OFB_MPLS_DATA_FIRST_NIBBLE, ofdpa_mpls_data_first_nibble);
+                OFDPA_ofl_structs_match_exp_put8(m, OXM_OF_OFDPA_MPLS_DATA_FIRST_NIBBLE, OFDPA_EXPERIMENTER_ID, ofdpa_mpls_data_first_nibble);
             }
             continue;
         }
@@ -2053,7 +2068,7 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put16(m, OXM_OF_OFDPA_MPLS_ACH_CHANNEL, OFDPA_EXPERIMENTER_ID, OFDPA_OFPXMT_OFB_MPLS_ACH_CHANNEL, ofdpa_mpls_ach_channel);
+                OFDPA_ofl_structs_match_exp_put16(m, OXM_OF_OFDPA_MPLS_ACH_CHANNEL, OFDPA_EXPERIMENTER_ID, ofdpa_mpls_ach_channel);
             }
             continue;
         }
@@ -2068,7 +2083,7 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put8(m, OXM_OF_OFDPA_MPLS_TTL, OFDPA_EXPERIMENTER_ID, OFDPA_OFPXMT_OFB_MPLS_TTL, ofdpa_mpls_ttl);
+                OFDPA_ofl_structs_match_exp_put8(m, OXM_OF_OFDPA_MPLS_TTL, OFDPA_EXPERIMENTER_ID, ofdpa_mpls_ttl);
             }
             continue;
         }
@@ -2083,7 +2098,7 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put8(m, OXM_OF_OFDPA_MPLS_NEXT_LABEL_IS_GAL, OFDPA_EXPERIMENTER_ID, OFDPA_OFPXMT_OFB_MPLS_NEXT_LABEL_IS_GAL, ofdpa_mpls_next_label_is_gal);
+                OFDPA_ofl_structs_match_exp_put8(m, OXM_OF_OFDPA_MPLS_NEXT_LABEL_IS_GAL, OFDPA_EXPERIMENTER_ID, ofdpa_mpls_next_label_is_gal);
             }
             continue;
         }
@@ -2098,7 +2113,7 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put8(m, OXM_OF_OFDPA_OAM_Y1731_MDL, OFDPA_EXPERIMENTER_ID, OFDPA_OFPXMT_OFB_OAM_Y1731_MDL, ofdpa_oam_y1731_mdl);
+                OFDPA_ofl_structs_match_exp_put8(m, OXM_OF_OFDPA_OAM_Y1731_MDL, OFDPA_EXPERIMENTER_ID, ofdpa_oam_y1731_mdl);
             }
             continue;
         }
@@ -2113,7 +2128,7 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put8(m, OXM_OF_OFDPA_OAM_Y1731_OPCODE, OFDPA_EXPERIMENTER_ID, OFDPA_OFPXMT_OFB_OAM_Y1731_OPCODE, ofdpa_oam_y1731_opcode);
+                OFDPA_ofl_structs_match_exp_put8(m, OXM_OF_OFDPA_OAM_Y1731_OPCODE, OFDPA_EXPERIMENTER_ID, ofdpa_oam_y1731_opcode);
             }
             continue;
         }
@@ -2128,7 +2143,7 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put32(m, OXM_OF_OFDPA_COLOR_ACTIONS_INDEX, OFDPA_EXPERIMENTER_ID, OFDPA_OFPXMT_OFB_COLOR_ACTIONS_INDEX, ofdpa_color_actions_index);
+                OFDPA_ofl_structs_match_exp_put32(m, OXM_OF_OFDPA_COLOR_ACTIONS_INDEX, OFDPA_EXPERIMENTER_ID, ofdpa_color_actions_index);
             }
             continue;
         }
@@ -2143,7 +2158,7 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put32(m, OXM_OF_OFDPA_ACTSET_OUTPUT, OFDPA_EXPERIMENTER_ID, OFDPA_OFPXMT_OFB_ACTSET_OUTPUT, ofdpa_actset_output);
+                OFDPA_ofl_structs_match_exp_put32(m, OXM_OF_OFDPA_ACTSET_OUTPUT, OFDPA_EXPERIMENTER_ID, ofdpa_actset_output);
             }
             continue;
         }
@@ -2158,7 +2173,7 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put64(m, OXM_OF_OFDPA_TXFCL, OFDPA_EXPERIMENTER_ID, OFDPA_OFPXMT_OFB_TXFCL, ofdpa_txfcl);
+                OFDPA_ofl_structs_match_exp_put64(m, OXM_OF_OFDPA_TXFCL, OFDPA_EXPERIMENTER_ID, ofdpa_txfcl);
             }
 
             continue;
@@ -2174,7 +2189,7 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put64(m, OXM_OF_OFDPA_RXFCL, OFDPA_EXPERIMENTER_ID, OFDPA_OFPXMT_OFB_RXFCL, ofdpa_rxfcl);
+                OFDPA_ofl_structs_match_exp_put64(m, OXM_OF_OFDPA_RXFCL, OFDPA_EXPERIMENTER_ID, ofdpa_rxfcl);
             }
 
             continue;
@@ -2190,7 +2205,7 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put64(m, OXM_OF_OFDPA_RX_TIMESTAMP, OFDPA_EXPERIMENTER_ID, OFDPA_OFPXMT_OFB_RX_TIMESTAMP, ofdpa_rx_timestamp);
+                OFDPA_ofl_structs_match_exp_put64(m, OXM_OF_OFDPA_RX_TIMESTAMP, OFDPA_EXPERIMENTER_ID, ofdpa_rx_timestamp);
             }
 
             continue;
@@ -2206,7 +2221,37 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put8(m, OXM_OF_OFDPA_PROTECTION_INDEX, OFDPA_EXPERIMENTER_ID, OFDPA_OFPXMT_OFB_PROTECTION_INDEX, ofdpa_protection_index);
+                OFDPA_ofl_structs_match_exp_put8(m, OXM_OF_OFDPA_PROTECTION_INDEX, OFDPA_EXPERIMENTER_ID, ofdpa_protection_index);
+            }
+            continue;
+        }
+
+        if (strncmp(token, MATCH_OFDPA_MPLS_TYPE KEY_VAL, strlen(MATCH_OFDPA_MPLS_TYPE KEY_VAL)) == 0)
+        {
+            uint16_t ofdpa_mpls_type;
+
+            if (parse16(token + strlen(MATCH_OFDPA_MPLS_TYPE KEY_VAL), NULL, 0, 0xffff, &ofdpa_mpls_type))
+            {
+                ofp_fatal(0, "Error parsing ofdpa_mpls_type: %s.", token);
+            }
+            else
+            {
+                OFDPA_ofl_structs_match_exp_put16(m, OXM_OF_OFDPA_MPLS_TYPE, OFDPA_EXPERIMENTER_ID, ofdpa_mpls_type);
+            }
+            continue;
+        }
+
+        if (strncmp(token, MATCH_OFDPA_ALLOW_VLAN_TRANSLATION KEY_VAL, strlen(MATCH_OFDPA_ALLOW_VLAN_TRANSLATION KEY_VAL)) == 0)
+        {
+            uint8_t ofdpa_allow_vlan_xlate;
+
+            if (parse8(token + strlen(MATCH_OFDPA_ALLOW_VLAN_TRANSLATION KEY_VAL), NULL, 0, 0xFF, &ofdpa_allow_vlan_xlate))
+            {
+                ofp_fatal(0, "Error parsing ofdpa_allow_vlan_xlate: %s.", token);
+            }
+            else
+            {
+                OFDPA_ofl_structs_match_exp_put8(m, OXM_OF_OFDPA_ALLOW_VLAN_TRANSLATION, OFDPA_EXPERIMENTER_ID, ofdpa_allow_vlan_xlate);
             }
             continue;
         }
@@ -2221,7 +2266,7 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put64(m, OXM_OF_ACCTON_INPORTS, ACCTON_EXPERIMENTER_ID, ACCTON_OFPXMT_OFB_INPORTS, accton_in_ports);
+                OFDPA_ofl_structs_match_exp_put64(m, OXM_OF_ACCTON_INPORTS, ACCTON_EXPERIMENTER_ID, accton_in_ports);
             }
 
             continue;
@@ -2237,7 +2282,7 @@ parse_match(char *str, struct ofl_match_header **match) {
             }
             else
             {
-                OFDPA_ofl_structs_match_exp_put16(m, OXM_OF_ACCTON_UDF_OFFSET, ACCTON_EXPERIMENTER_ID, ACCTON_OFPXMT_OFB_UDF_OFFSET, accton_udf_offset);
+                OFDPA_ofl_structs_match_exp_put16(m, OXM_OF_ACCTON_UDF_OFFSET, ACCTON_EXPERIMENTER_ID, accton_udf_offset);
             }
             continue;
         }
@@ -2255,11 +2300,11 @@ parse_match(char *str, struct ofl_match_header **match) {
             {
                 if (mask == NULL)
                 {
-                    OFDPA_ofl_structs_match_exp_put32(m, OXM_OF_ACCTON_UDF_DATA, ACCTON_EXPERIMENTER_ID, ACCTON_OFPXMT_OFB_UDF_DATA, accton_udf_data);
+                    OFDPA_ofl_structs_match_exp_put32(m, OXM_OF_ACCTON_UDF_DATA, ACCTON_EXPERIMENTER_ID, accton_udf_data);
                 }
                 else
                 {
-                    OFDPA_ofl_structs_match_exp_put32m(m, OXM_OF_ACCTON_UDF_DATA_W, ACCTON_EXPERIMENTER_ID, ACCTON_OFPXMT_OFB_UDF_DATA, accton_udf_data, *mask);
+                    OFDPA_ofl_structs_match_exp_put32m(m, OXM_OF_ACCTON_UDF_DATA_W, ACCTON_EXPERIMENTER_ID, accton_udf_data, *mask);
                 }
             }
             continue;
@@ -2675,7 +2720,6 @@ parse_set_field(char *token, struct ofl_action_set_field *act) {
             struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
             ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_VRF;
             ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
-            ofdpa_exp_tlv_p->exp_type = OFDPA_OFPXMT_OFB_VRF;
             ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_vrf;
             act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
         }
@@ -2690,7 +2734,6 @@ parse_set_field(char *token, struct ofl_action_set_field *act) {
             struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
             ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_TRAFFIC_CLASS;
             ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
-            ofdpa_exp_tlv_p->exp_type = OFDPA_OFPXMT_OFB_TRAFFIC_CLASS;
             ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_tc;
             act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
         }
@@ -2705,7 +2748,6 @@ parse_set_field(char *token, struct ofl_action_set_field *act) {
             struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
             ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_COLOR;
             ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
-            ofdpa_exp_tlv_p->exp_type = OFDPA_OFPXMT_OFB_COLOR;
             ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_color;
             act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
         }
@@ -2720,7 +2762,6 @@ parse_set_field(char *token, struct ofl_action_set_field *act) {
             struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
             ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_DEI;
             ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
-            ofdpa_exp_tlv_p->exp_type = OFDPA_OFPXMT_OFB_DEI;
             ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_dei;
             act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
         }
@@ -2735,7 +2776,6 @@ parse_set_field(char *token, struct ofl_action_set_field *act) {
             struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
             ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_QOS_INDEX;
             ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
-            ofdpa_exp_tlv_p->exp_type = OFDPA_OFPXMT_OFB_QOS_INDEX;
             ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_qos_index;
             act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
         }
@@ -2750,7 +2790,6 @@ parse_set_field(char *token, struct ofl_action_set_field *act) {
             struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
             ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_LMEP_ID;
             ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
-            ofdpa_exp_tlv_p->exp_type = OFDPA_OFPXMT_OFB_LMEP_ID;
             ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_lmep_id;
             act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
         }
@@ -2765,8 +2804,21 @@ parse_set_field(char *token, struct ofl_action_set_field *act) {
             struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
             ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_MPLS_L2_PORT;
             ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
-            ofdpa_exp_tlv_p->exp_type = OFDPA_OFPXMT_OFB_MPLS_L2_PORT;
             ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_mpls_l2_port;
+            act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
+        }
+        return 0;
+    }
+    if (strncmp(token, MATCH_OFDPA_L3_IN_PORT KEY_VAL2, strlen(MATCH_OFDPA_L3_IN_PORT KEY_VAL2)) == 0) {
+        uint32_t* ofdpa_l3_in_port = xmalloc(sizeof(uint32_t));
+        if (parse32(token + strlen(MATCH_OFDPA_L3_IN_PORT KEY_VAL2), NULL, 0, 0xffffffff, ofdpa_l3_in_port)) {
+            ofp_fatal(0, "Error parsing ofdpa_l3_in_port: %s.", token);
+        }
+        else {
+            struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
+            ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_L3_IN_PORT;
+            ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
+            ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_l3_in_port;
             act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
         }
         return 0;
@@ -2780,7 +2832,6 @@ parse_set_field(char *token, struct ofl_action_set_field *act) {
             struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
             ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_OVID;
             ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
-            ofdpa_exp_tlv_p->exp_type = OFDPA_OFPXMT_OFB_OVID;
             ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_ovid;
             act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
         }
@@ -2795,7 +2846,6 @@ parse_set_field(char *token, struct ofl_action_set_field *act) {
             struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
             ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_MPLS_DATA_FIRST_NIBBLE;
             ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
-            ofdpa_exp_tlv_p->exp_type = OFDPA_OFPXMT_OFB_MPLS_DATA_FIRST_NIBBLE;
             ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_mpls_data_first_nibble;
             act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
         }
@@ -2810,7 +2860,6 @@ parse_set_field(char *token, struct ofl_action_set_field *act) {
             struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
             ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_MPLS_ACH_CHANNEL;
             ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
-            ofdpa_exp_tlv_p->exp_type = OFDPA_OFPXMT_OFB_MPLS_ACH_CHANNEL;
             ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_mpls_ach_channel;
             act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
         }
@@ -2825,7 +2874,6 @@ parse_set_field(char *token, struct ofl_action_set_field *act) {
             struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
             ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_MPLS_TTL;
             ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
-            ofdpa_exp_tlv_p->exp_type = OFDPA_OFPXMT_OFB_MPLS_TTL;
             ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_mpls_ttl;
             act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
         }
@@ -2840,7 +2888,6 @@ parse_set_field(char *token, struct ofl_action_set_field *act) {
             struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
             ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_MPLS_NEXT_LABEL_IS_GAL;
             ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
-            ofdpa_exp_tlv_p->exp_type = OFDPA_OFPXMT_OFB_MPLS_NEXT_LABEL_IS_GAL;
             ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_mpls_next_label_is_gal;
             act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
         }
@@ -2855,7 +2902,6 @@ parse_set_field(char *token, struct ofl_action_set_field *act) {
             struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
             ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_OAM_Y1731_MDL;
             ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
-            ofdpa_exp_tlv_p->exp_type = OFDPA_OFPXMT_OFB_OAM_Y1731_MDL;
             ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_oam_y1731_mdl;
             act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
         }
@@ -2870,7 +2916,6 @@ parse_set_field(char *token, struct ofl_action_set_field *act) {
             struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
             ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_OAM_Y1731_OPCODE;
             ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
-            ofdpa_exp_tlv_p->exp_type = OFDPA_OFPXMT_OFB_OAM_Y1731_OPCODE;
             ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_oam_y1731_opcode;
             act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
         }
@@ -2885,7 +2930,6 @@ parse_set_field(char *token, struct ofl_action_set_field *act) {
             struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
             ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_COLOR_ACTIONS_INDEX;
             ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
-            ofdpa_exp_tlv_p->exp_type = OFDPA_OFPXMT_OFB_COLOR_ACTIONS_INDEX;
             ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_color_actions_index;
             act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
         }
@@ -2900,7 +2944,6 @@ parse_set_field(char *token, struct ofl_action_set_field *act) {
             struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
             ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_ACTSET_OUTPUT;
             ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
-            ofdpa_exp_tlv_p->exp_type = OFDPA_OFPXMT_OFB_ACTSET_OUTPUT;
             ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_actset_output;
             act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
         }
@@ -2915,7 +2958,6 @@ parse_set_field(char *token, struct ofl_action_set_field *act) {
             struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
             ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_TXFCL;
             ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
-            ofdpa_exp_tlv_p->exp_type = OFDPA_OFPXMT_OFB_TXFCL;
             ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_txfcl;
             act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
         }
@@ -2930,7 +2972,6 @@ parse_set_field(char *token, struct ofl_action_set_field *act) {
             struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
             ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_RXFCL;
             ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
-            ofdpa_exp_tlv_p->exp_type = OFDPA_OFPXMT_OFB_RXFCL;
             ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_rxfcl;
             act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
         }
@@ -2945,7 +2986,6 @@ parse_set_field(char *token, struct ofl_action_set_field *act) {
             struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
             ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_RX_TIMESTAMP;
             ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
-            ofdpa_exp_tlv_p->exp_type = OFDPA_OFPXMT_OFB_RX_TIMESTAMP;
             ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_rx_timestamp;
             act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
         }
@@ -2960,8 +3000,35 @@ parse_set_field(char *token, struct ofl_action_set_field *act) {
             struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
             ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_PROTECTION_INDEX;
             ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
-            ofdpa_exp_tlv_p->exp_type = OFDPA_OFPXMT_OFB_PROTECTION_INDEX;
             ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_protection_index;
+            act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
+        }
+        return 0;
+    }
+    if (strncmp(token, MATCH_OFDPA_MPLS_TYPE KEY_VAL2, strlen(MATCH_OFDPA_MPLS_TYPE KEY_VAL2)) == 0) {
+        uint16_t* ofdpa_mpls_type = xmalloc(sizeof(uint16_t));
+        if (parse16(token + strlen(MATCH_OFDPA_MPLS_TYPE KEY_VAL2), NULL, 0, 0xffff, ofdpa_mpls_type)) {
+            ofp_fatal(0, "Error parsing ofdpa_mpls_type: %s.", token);
+        }
+        else {
+            struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
+            ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_MPLS_TYPE;
+            ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
+            ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_mpls_type;
+            act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
+        }
+        return 0;
+    }
+    if (strncmp(token, MATCH_OFDPA_ALLOW_VLAN_TRANSLATION KEY_VAL2, strlen(MATCH_OFDPA_ALLOW_VLAN_TRANSLATION KEY_VAL2)) == 0) {
+        uint8_t* ofdpa_allow_vlan_xlate = xmalloc(sizeof(uint8_t));
+        if (parse8(token + strlen(MATCH_OFDPA_ALLOW_VLAN_TRANSLATION KEY_VAL2), NULL, 0, 0xFF, ofdpa_allow_vlan_xlate)) {
+            ofp_fatal(0, "Error parsing ofdpa_allow_vlan_xlate: %s.", token);
+        }
+        else {
+            struct OFDPA_ofl_match_exp_tlv *ofdpa_exp_tlv_p = malloc(sizeof(struct OFDPA_ofl_match_exp_tlv));
+            ofdpa_exp_tlv_p->header = OXM_OF_OFDPA_ALLOW_VLAN_TRANSLATION;
+            ofdpa_exp_tlv_p->experimenter = OFDPA_EXPERIMENTER_ID;
+            ofdpa_exp_tlv_p->exp_data_p = (uint8_t*) ofdpa_allow_vlan_xlate;
             act->field = (struct ofl_match_tlv*) ofdpa_exp_tlv_p;
         }
         return 0;
@@ -3191,7 +3258,7 @@ static void OFDPA_parse_exp_action(uint16_t type, char *str, struct ofl_action_h
         {
             struct OFDPA_ofl_action_exp_drop_status *a = xmalloc(sizeof(struct OFDPA_ofl_action_exp_drop_status));
 
-            if (sscanf(str, "%ld+%d", &(a->drop_index), &(a->drop_type)) != 2)
+            if (sscanf(str, "%"PRIu32"+%d", &(a->drop_index), &(a->drop_type)) != 2)
             {
                 ofp_fatal(0, "Error parsing value in %s action: %s.", ofdpa_exp_action_names[type-1].name, str);
             }
@@ -4025,8 +4092,8 @@ parse_data(char *str, size_t *data_length, uint8_t **data){
 
     for (token = strtok_r(str, KEY_SEP, &saveptr); token != NULL; token = strtok_r(NULL, KEY_SEP, &saveptr)) {
         if (strncmp(token, DATA_SIZE KEY_VAL, strlen(DATA_SIZE KEY_VAL)) == 0) {
-            if ((sscanf(token, DATA_SIZE KEY_VAL "%d", data_length) != 1)|| *data_length <15) {
-                ofp_fatal(0, "Error data_lenght : %d.", *data_length);
+            if ((sscanf(token, DATA_SIZE KEY_VAL "%zu", data_length) != 1)|| *data_length <15) {
+                ofp_fatal(0, "Error data_lenght : %zu.", *data_length);
             }
             *data = xmalloc(*data_length);
 	    memset(*data,0x00,*data_length);
